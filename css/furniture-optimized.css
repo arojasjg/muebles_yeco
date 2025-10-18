@@ -185,9 +185,11 @@ button {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('../images/WhatsApp Image 2025-09-22 at 21.07.39.jpeg') center/cover;
-    opacity: 0.2;
+    background: url('../images/WhatsApp%20Image%202025-09-22%20at%2021.07.37.jpeg') center/cover;
+    opacity: 0.3;
     mix-blend-mode: overlay;
+    filter: contrast(115%) brightness(108%);
+    transition: filter 0.3s ease;
 }
 
 .hero-overlay {

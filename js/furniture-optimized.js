@@ -71,6 +71,7 @@ function init() {
   setupSmoothScroll();
   setupPerformanceOptimizations();
   setupWhatsAppButton();
+  setupGalleryButton();
 }
 
 /**
@@ -568,6 +569,324 @@ function setupWhatsAppButton() {
     },
     passiveSupported ? { passive: true } : false
   );
+}
+
+/**
+ * Setup Gallery Button functionality
+ */
+function setupGalleryButton() {
+  const showAllBtn = document.getElementById("showAllGallery");
+  if (!showAllBtn) return;
+
+  showAllBtn.addEventListener("click", () => {
+    showFullGallery();
+  });
+}
+
+/**
+ * Show full gallery functionality
+ */
+function showFullGallery() {
+  // Create modal overlay
+  const modal = document.createElement("div");
+  modal.className = "gallery-modal";
+  modal.innerHTML = `
+    <div class="gallery-modal-content">
+      <div class="gallery-modal-header">
+        <h2>Galería Completa - Muebles Yeco</h2>
+        <button class="gallery-modal-close" aria-label="Cerrar galería">&times;</button>
+      </div>
+      <div class="gallery-modal-filters">
+        <select id="modalCategoryFilter">
+          <option value="">Todas las categorías</option>
+          <option value="sala">Sala</option>
+          <option value="dormitorio">Dormitorio</option>
+          <option value="cocina">Cocina</option>
+          <option value="oficina">Oficina</option>
+          <option value="closet">Closet</option>
+        </select>
+      </div>
+      <div class="gallery-modal-grid" id="modalGalleryGrid">
+        <!-- Gallery items will be loaded here -->
+      </div>
+    </div>
+  `;
+
+  // Add modal styles
+  const style = document.createElement("style");
+  style.textContent = `
+    .gallery-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .gallery-modal-content {
+      background: var(--bg-white);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 1200px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .gallery-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-light);
+    }
+    
+    .gallery-modal-header h2 {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      margin: 0;
+    }
+    
+    .gallery-modal-close {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+    
+    .gallery-modal-close:hover {
+      background: var(--error);
+      color: white;
+    }
+    
+    .gallery-modal-filters {
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .gallery-modal-filters select {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    
+    .gallery-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .modal-gallery-item {
+      background: var(--bg-white);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    
+    .modal-gallery-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .modal-gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      filter: contrast(115%) brightness(108%);
+      transition: all 0.3s ease;
+    }
+    
+    .modal-gallery-item:hover img {
+      filter: contrast(120%) brightness(112%) saturate(105%);
+    }
+    
+    .modal-gallery-info {
+      padding: 1rem;
+    }
+    
+    .modal-gallery-title {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .modal-gallery-description {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+    }
+    
+    .modal-gallery-category {
+      display: inline-block;
+      background: var(--accent-color);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      text-transform: capitalize;
+    }
+    
+    @media (max-width: 768px) {
+      .gallery-modal {
+        padding: 1rem;
+      }
+      
+      .gallery-modal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .gallery-modal-header {
+        padding: 1rem;
+      }
+      
+      .gallery-modal-filters {
+        padding: 1rem;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+  document.body.appendChild(modal);
+
+  // Load gallery items
+  loadModalGallery();
+
+  // Setup event listeners
+  const closeBtn = modal.querySelector(".gallery-modal-close");
+  const categoryFilter = modal.querySelector("#modalCategoryFilter");
+
+  closeBtn.addEventListener("click", () => {
+    document.body.removeChild(modal);
+    document.head.removeChild(style);
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+      document.head.removeChild(style);
+    }
+  });
+
+  categoryFilter.addEventListener("change", () => {
+    filterModalGallery(categoryFilter.value);
+  });
+
+  // Prevent body scroll
+  document.body.style.overflow = "hidden";
+
+  // Restore body scroll when modal closes
+  const originalClose = closeBtn.onclick;
+  closeBtn.onclick = () => {
+    document.body.style.overflow = "";
+    if (originalClose) originalClose();
+  };
+}
+
+/**
+ * Load gallery items into modal
+ */
+async function loadModalGallery() {
+  const grid = document.getElementById("modalGalleryGrid");
+  if (!grid) return;
+
+  try {
+    // Try to load from admin API
+    const response = await fetch("/api/gallery-public");
+    let items = [];
+
+    if (response.ok) {
+      const data = await response.json();
+      items = [...data.data.images, ...data.data.videos];
+    } else {
+      // Fallback to static images
+      items = furnitureImages.map((img, index) => ({
+        src: `images/${img}`,
+        title: `Mueble ${index + 1}`,
+        description: "Mueble de melamina a medida",
+        category: index % 2 === 0 ? "sala" : "dormitorio",
+      }));
+    }
+
+    renderModalGallery(items);
+  } catch (error) {
+    console.log("Using fallback gallery data for modal");
+    // Fallback to static images
+    const items = furnitureImages.map((img, index) => ({
+      src: `images/${img}`,
+      title: `Mueble ${index + 1}`,
+      description: "Mueble de melamina a medida",
+      category: index % 2 === 0 ? "sala" : "dormitorio",
+    }));
+    renderModalGallery(items);
+  }
+}
+
+/**
+ * Render gallery items in modal
+ */
+function renderModalGallery(items) {
+  const grid = document.getElementById("modalGalleryGrid");
+  if (!grid) return;
+
+  grid.innerHTML = items
+    .map(
+      (item, index) => `
+    <div class="modal-gallery-item" onclick="openLightbox(${index})">
+      <img src="${item.src}" alt="${item.title}" loading="lazy">
+      <div class="modal-gallery-info">
+        <div class="modal-gallery-title">${item.title}</div>
+        <div class="modal-gallery-description">${
+          item.description || "Mueble de melamina personalizado"
+        }</div>
+        <span class="modal-gallery-category">${item.category || "mueble"}</span>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+
+  // Update global gallery images for lightbox
+  galleryImages = items;
+}
+
+/**
+ * Filter modal gallery by category
+ */
+function filterModalGallery(category) {
+  const items = document.querySelectorAll(".modal-gallery-item");
+
+  items.forEach((item) => {
+    const itemCategory = item.querySelector(
+      ".modal-gallery-category"
+    ).textContent;
+
+    if (!category || itemCategory === category) {
+      item.style.display = "block";
+    } else {
+      item.style.display = "none";
+    }
+  });
 }
 
 console.log("🪵 Muebles Yeco - Optimizado y listo");

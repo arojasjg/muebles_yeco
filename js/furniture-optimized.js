@@ -163,26 +163,39 @@ async function setupGallery() {
     if (response.ok) {
       const data = await response.json();
       galleryImages = [...data.data.images, ...data.data.videos];
+
+      // Add locally stored uploaded images (same approach as admin panel)
+      const storedImages = getStoredUploadedImages();
+      if (storedImages.length > 0) {
+        const formattedStoredImages = storedImages.map((img) => ({
+          src: img.dataUrl,
+          alt: img.title,
+          title: img.title,
+          description: img.description,
+          category: img.category,
+        }));
+        galleryImages = [...galleryImages, ...formattedStoredImages];
+      }
     } else {
-      // Fallback to static images
+      // Fallback to static images only if API fails
       galleryImages = furnitureImages.map((img, index) => ({
         src: `images/${img}`,
         alt: `Mueble artesanal de melamina ${index + 1}`,
         title: `Colección de Muebles ${index + 1}`,
       }));
-    }
 
-    // Add locally stored uploaded images
-    const storedImages = getStoredUploadedImages();
-    if (storedImages.length > 0) {
-      const formattedStoredImages = storedImages.map((img) => ({
-        src: img.dataUrl,
-        alt: img.title,
-        title: img.title,
-        description: img.description,
-        category: img.category,
-      }));
-      galleryImages = [...galleryImages, ...formattedStoredImages];
+      // Only add localStorage images in fallback mode when API is not available
+      const storedImages = getStoredUploadedImages();
+      if (storedImages.length > 0) {
+        const formattedStoredImages = storedImages.map((img) => ({
+          src: img.dataUrl,
+          alt: img.title,
+          title: img.title,
+          description: img.description,
+          category: img.category,
+        }));
+        galleryImages = [...galleryImages, ...formattedStoredImages];
+      }
     }
   } catch (error) {
     console.log("Using fallback gallery data");
@@ -193,7 +206,7 @@ async function setupGallery() {
       title: `Colección de Muebles ${index + 1}`,
     }));
 
-    // Still try to add stored images even in fallback
+    // Add stored images only in error/fallback case
     const storedImages = getStoredUploadedImages();
     if (storedImages.length > 0) {
       const formattedStoredImages = storedImages.map((img) => ({

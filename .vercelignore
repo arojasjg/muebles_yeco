@@ -1,7 +1,3 @@
-# PHP files (not needed for static deployment)
-*.php
-*.php.bk
-
 # Development files
 .git
 .vscode
@@ -11,13 +7,23 @@
 .nvmrc
 node_modules
 
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# PHP files (not needed for static deployment)
+admin/
+*.php
+*.php.bk
+
 # Server configs
 .htaccess.backup
 .user.ini
 nginx.conf
 start-server.sh
 
-# Documentation (optional - remove if you want them deployed)
+# Documentation
 *.md
 !README.md
 
@@ -29,3 +35,7 @@ info.php
 # Backup files
 *.bk
 *.backup
+*.old
+
+# Data files
+gallery_data.json

@@ -13,6 +13,7 @@ let galleryData = {
       uploadDate: "2025-10-18T00:00:00Z",
       isActive: true,
       type: "image",
+      imageUrl: "/images/WhatsApp Image 2025-09-22 at 21.07.37.jpeg",
     },
     {
       id: "2",
@@ -23,6 +24,7 @@ let galleryData = {
       uploadDate: "2025-10-18T00:00:00Z",
       isActive: true,
       type: "image",
+      imageUrl: "/images/WhatsApp Image 2025-09-22 at 21.07.39.jpeg",
     },
     {
       id: "3",
@@ -33,6 +35,7 @@ let galleryData = {
       uploadDate: "2025-10-18T00:00:00Z",
       isActive: true,
       type: "image",
+      imageUrl: "/images/WhatsApp Image 2025-09-22 at 21.07.45.jpeg",
     },
     {
       id: "4",
@@ -43,6 +46,7 @@ let galleryData = {
       uploadDate: "2025-10-18T00:00:00Z",
       isActive: true,
       type: "image",
+      imageUrl: "/images/WhatsApp Image 2025-09-22 at 21.07.46.jpeg",
     },
     {
       id: "5",
@@ -53,9 +57,12 @@ let galleryData = {
       uploadDate: "2025-10-18T00:00:00Z",
       isActive: true,
       type: "image",
+      imageUrl: "/images/WhatsApp Image 2025-09-22 at 21.07.48.jpeg",
     },
   ],
   videos: [],
+  // Store uploaded images with Base64 data
+  uploadedImages: [],
 };
 
 // Export functions to manage gallery data
@@ -67,7 +74,20 @@ export function addGalleryItem(item) {
   if (item.type === "video") {
     galleryData.videos.push(item);
   } else {
-    galleryData.images.push(item);
+    // Check if it's an uploaded image with Base64 data
+    if (item.dataUrl && item.dataUrl.startsWith("data:")) {
+      // Store uploaded images separately with Base64 data
+      galleryData.uploadedImages.push(item);
+      // Also add to main images array for display
+      const imageItem = {
+        ...item,
+        imageUrl: item.dataUrl, // Use Base64 data URL directly
+      };
+      galleryData.images.push(imageItem);
+    } else {
+      // Regular image with file path
+      galleryData.images.push(item);
+    }
   }
   return item;
 }

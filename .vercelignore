@@ -1,0 +1,31 @@
+# PHP files (not needed for static deployment)
+*.php
+*.php.bk
+
+# Development files
+.git
+.vscode
+.kiro
+.DS_Store
+.herdignore
+.nvmrc
+node_modules
+
+# Server configs
+.htaccess.backup
+.user.ini
+nginx.conf
+start-server.sh
+
+# Documentation (optional - remove if you want them deployed)
+*.md
+!README.md
+
+# Test files
+test-*.php
+test-*.html
+info.php
+
+# Backup files
+*.bk
+*.backup

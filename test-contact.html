@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test - Formulario y WhatsApp</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-section {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        color: #8b4513;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+      button {
+        background: #8b4513;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+      }
+      button:hover {
+        background: #654321;
+      }
+      .whatsapp-test {
+        display: inline-block;
+        background: #25d366;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-top: 10px;
+      }
+      .status {
+        margin-top: 15px;
+        padding: 12px;
+        border-radius: 6px;
+        display: none;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        display: block;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-section">
+      <h2>🧪 Test de Formulario de Contacto</h2>
+      <form id="testForm">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" name="name" required value="Juan Pérez" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" required value="juan@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" name="phone" value="1234-5678" />
+        </div>
+        <div class="form-group">
+          <label>Interés</label>
+          <select name="interest">
+            <option value="">Seleccionar...</option>
+            <option value="home">Muebles para Hogar</option>
+            <option value="business">Muebles para Negocio</option>
+            <option value="custom">Diseño Personalizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mensaje *</label>
+          <textarea name="message" rows="4" required>
+Hola, me interesa conocer más sobre sus muebles de melamina.</textarea
+          >
+        </div>
+        <button type="submit">Enviar Prueba</button>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+
+    <div class="test-section">
+      <h2>📱 Test de WhatsApp</h2>
+      <p>Click en el botón para abrir WhatsApp:</p>
+      <a
+        href="https://wa.me/50237688618?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20sus%20muebles"
+        class="whatsapp-test"
+        target="_blank"
+      >
+        Abrir WhatsApp
+      </a>
+      <p style="margin-top: 15px; color: #666; font-size: 14px">
+        Número: +502 3768 8618<br />
+        Mensaje: "Hola, me interesa conocer más sobre sus muebles"
+      </p>
+    </div>
+
+    <div class="test-section">
+      <h2>📋 Información</h2>
+      <ul style="color: #666; line-height: 1.8">
+        <li><strong>API Endpoint:</strong> /api/contact</li>
+        <li><strong>Email destino:</strong> marquiro17@gmail.com</li>
+        <li><strong>WhatsApp:</strong> +502 3768 8618</li>
+        <li><strong>Ubicación:</strong> Guatemala, Guatemala</li>
+      </ul>
+    </div>
+
+    <script>
+      const form = document.getElementById("testForm");
+      const status = document.getElementById("status");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const data = {
+          name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          interest: formData.get("interest"),
+          message: formData.get("message"),
+        };
+
+        const button = form.querySelector("button");
+        button.textContent = "Enviando...";
+        button.disabled = true;
+        status.style.display = "none";
+
+        try {
+          const response = await fetch("/api/contact", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            status.className = "status success";
+            status.textContent =
+              "✅ " + (result.message || "Mensaje enviado correctamente");
+          } else {
+            status.className = "status error";
+            status.textContent = "❌ " + (result.error || "Error al enviar");
+          }
+        } catch (error) {
+          status.className = "status error";
+          status.textContent = "❌ Error de conexión: " + error.message;
+        } finally {
+          button.textContent = "Enviar Prueba";
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

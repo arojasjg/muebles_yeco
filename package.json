@@ -1,0 +1,22 @@
+{
+  "name": "muebles-yeco",
+  "version": "1.0.0",
+  "description": "Muebles de melamina a medida - Guatemala",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "muebles",
+    "melamina",
+    "guatemala",
+    "furniture"
+  ],
+  "author": "Muebles Yeco",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}

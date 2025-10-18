@@ -70,6 +70,7 @@ function init() {
   setupScrollEffects();
   setupSmoothScroll();
   setupPerformanceOptimizations();
+  setupWhatsAppButton();
 }
 
 /**
@@ -295,13 +296,37 @@ function setupContactForm() {
     submitBtn.textContent = "Enviando...";
     submitBtn.disabled = true;
 
-    // Simulate submission (replace with actual API)
-    setTimeout(() => {
-      showFormSuccess();
-      DOM.contactForm.reset();
+    try {
+      // Send to Vercel API
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          interest: formData.get("interest"),
+          message: formData.get("message"),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showFormSuccess();
+        DOM.contactForm.reset();
+      } else {
+        showFormError(data.error || "Error al enviar el mensaje");
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      showFormError("Error de conexión. Por favor intente nuevamente.");
+    } finally {
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
-    }, 1500);
+    }
   });
 }
 
@@ -332,7 +357,18 @@ function showFormSuccess() {
   message.className = "form-success";
   message.textContent = "¡Gracias por tu mensaje! Te contactaremos pronto.";
   message.style.cssText =
-    "background:#d4edda;color:#155724;padding:1rem;border-radius:8px;margin-top:1rem;text-align:center";
+    "background:#d4edda;color:#155724;padding:1rem;border-radius:8px;margin-top:1rem;text-align:center;animation:slideIn 0.3s ease";
+
+  DOM.contactForm.appendChild(message);
+  setTimeout(() => message.remove(), 5000);
+}
+
+function showFormError(errorMessage) {
+  const message = document.createElement("div");
+  message.className = "form-error";
+  message.textContent = errorMessage;
+  message.style.cssText =
+    "background:#f8d7da;color:#721c24;padding:1rem;border-radius:8px;margin-top:1rem;text-align:center;animation:slideIn 0.3s ease";
 
   DOM.contactForm.appendChild(message);
   setTimeout(() => message.remove(), 5000);
@@ -477,6 +513,43 @@ if (window.performance && window.performance.timing) {
       console.log(`🚀 Página cargada en ${pageLoadTime}ms`);
     }, 0);
   });
+}
+
+/**
+ * WhatsApp floating button
+ */
+function setupWhatsAppButton() {
+  const whatsappBtn = document.createElement("a");
+  whatsappBtn.href =
+    "https://wa.me/50237688618?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20sus%20muebles";
+  whatsappBtn.target = "_blank";
+  whatsappBtn.rel = "noopener noreferrer";
+  whatsappBtn.className = "whatsapp-float";
+  whatsappBtn.setAttribute("aria-label", "Chatear por WhatsApp");
+  whatsappBtn.innerHTML = `
+    <svg viewBox="0 0 32 32" width="32" height="32">
+      <path fill="currentColor" d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 7.933-2.127c2.42 1.37 5.173 2.127 8.067 2.127 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.467c-2.482 0-4.908-0.646-7.07-1.87l-0.507-0.292-4.713 1.262 1.262-4.669-0.292-0.508c-1.207-2.100-1.847-4.507-1.847-6.924 0-7.435 6.050-13.485 13.485-13.485s13.485 6.050 13.485 13.485c0 7.435-6.050 13.485-13.485 13.485zM21.305 18.405c-0.365-0.182-2.159-1.067-2.494-1.189s-0.578-0.182-0.822 0.182c-0.243 0.365-0.944 1.189-1.158 1.433s-0.426 0.274-0.791 0.091c-0.365-0.182-1.542-0.569-2.937-1.811-1.086-0.968-1.818-2.165-2.032-2.53s-0.022-0.562 0.16-0.744c0.164-0.164 0.365-0.426 0.548-0.639s0.243-0.365 0.365-0.609c0.122-0.243 0.061-0.456-0.030-0.639s-0.822-1.981-1.127-2.713c-0.296-0.713-0.598-0.617-0.822-0.628-0.213-0.011-0.456-0.013-0.7-0.013s-0.639 0.091-0.974 0.456c-0.335 0.365-1.279 1.250-1.279 3.048s1.310 3.535 1.492 3.778c0.182 0.243 2.550 3.897 6.182 5.467 0.863 0.373 1.537 0.596 2.062 0.762 0.869 0.277 1.66 0.238 2.286 0.145 0.698-0.104 2.159-0.883 2.463-1.735s0.304-1.583 0.213-1.735c-0.091-0.152-0.335-0.243-0.7-0.426z"/>
+    </svg>
+    <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
+  `;
+
+  document.body.appendChild(whatsappBtn);
+
+  // Animate on scroll
+  let lastScroll = 0;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const currentScroll = window.pageYOffset;
+      if (currentScroll > 300) {
+        whatsappBtn.classList.add("visible");
+      } else {
+        whatsappBtn.classList.remove("visible");
+      }
+      lastScroll = currentScroll;
+    },
+    passiveSupported ? { passive: true } : false
+  );
 }
 
 console.log("🪵 Muebles Yeco - Optimizado y listo");

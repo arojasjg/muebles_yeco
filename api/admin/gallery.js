@@ -1,39 +1,11 @@
 // Gallery Management API for Vercel
 import { verifyAdminToken } from "./auth.js";
-
-// In-memory storage for demo (in production, use a database like Vercel KV, PlanetScale, or Supabase)
-let galleryData = {
-  images: [
-    {
-      id: "1",
-      filename: "WhatsApp Image 2025-09-22 at 21.07.37.jpeg",
-      title: "Mueble de Sala 1",
-      description: "Centro de entretenimiento moderno",
-      category: "sala",
-      uploadDate: "2025-10-18T00:00:00Z",
-      isActive: true,
-    },
-    {
-      id: "2",
-      filename: "WhatsApp Image 2025-09-22 at 21.07.39.jpeg",
-      title: "Mueble de Sala 2",
-      description: "Estantería elegante",
-      category: "sala",
-      uploadDate: "2025-10-18T00:00:00Z",
-      isActive: true,
-    },
-    {
-      id: "3",
-      filename: "WhatsApp Image 2025-09-22 at 21.07.45.jpeg",
-      title: "Mueble de Dormitorio",
-      description: "Cómoda con espejo",
-      category: "dormitorio",
-      uploadDate: "2025-10-18T00:00:00Z",
-      isActive: true,
-    },
-  ],
-  videos: [],
-};
+import {
+  getGalleryData,
+  addGalleryItem,
+  updateGalleryItem,
+  deleteGalleryItem,
+} from "../shared/gallery-data.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -63,6 +35,7 @@ export default async function handler(req, res) {
       case "GET":
         // Get all gallery items
         const { category, active } = req.query;
+        const galleryData = getGalleryData();
         let items = [...galleryData.images, ...galleryData.videos];
 
         if (category) {
@@ -108,17 +81,14 @@ export default async function handler(req, res) {
           uploadDate: new Date().toISOString(),
           isActive: true,
           type,
+          dataUrl: req.body.dataUrl || null, // For base64 images
         };
 
-        if (type === "video") {
-          galleryData.videos.push(newItem);
-        } else {
-          galleryData.images.push(newItem);
-        }
+        const addedItem = addGalleryItem(newItem);
 
         return res.status(201).json({
           success: true,
-          data: newItem,
+          data: addedItem,
           message: "Gallery item added successfully",
         });
 
@@ -131,27 +101,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
-        let itemFound = false;
-
-        // Update in images array
-        galleryData.images = galleryData.images.map((item) => {
-          if (item.id === updateId) {
-            itemFound = true;
-            return { ...item, ...updateData, id: updateId }; // Preserve ID
-          }
-          return item;
-        });
-
-        // Update in videos array if not found in images
-        if (!itemFound) {
-          galleryData.videos = galleryData.videos.map((item) => {
-            if (item.id === updateId) {
-              itemFound = true;
-              return { ...item, ...updateData, id: updateId }; // Preserve ID
-            }
-            return item;
-          });
-        }
+        const itemFound = updateGalleryItem(updateId, updateData);
 
         if (!itemFound) {
           return res.status(404).json({ error: "Gallery item not found" });
@@ -170,19 +120,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
-        const initialImageCount = galleryData.images.length;
-        const initialVideoCount = galleryData.videos.length;
-
-        galleryData.images = galleryData.images.filter(
-          (item) => item.id !== deleteId
-        );
-        galleryData.videos = galleryData.videos.filter(
-          (item) => item.id !== deleteId
-        );
-
-        const itemDeleted =
-          galleryData.images.length < initialImageCount ||
-          galleryData.videos.length < initialVideoCount;
+        const itemDeleted = deleteGalleryItem(deleteId);
 
         if (!itemDeleted) {
           return res.status(404).json({ error: "Gallery item not found" });

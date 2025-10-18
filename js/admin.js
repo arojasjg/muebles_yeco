@@ -271,7 +271,9 @@ class AdminPanel {
                     ? `<video class="gallery-image" controls>
                         <source src="images/${item.filename}" type="video/mp4">
                     </video>`
-                    : `<img src="images/${item.filename}" alt="${item.title}" class="gallery-image">`
+                    : `<img src="${
+                        item.dataUrl || `images/${item.filename}`
+                      }" alt="${item.title}" class="gallery-image">`
                 }
                 <div class="gallery-info">
                     <div class="gallery-title">${item.title}</div>
@@ -379,46 +381,45 @@ class AdminPanel {
 
     const file = files[0];
 
-    // Validate file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/webp",
-      "video/mp4",
-      "video/webm",
-    ];
+    // Validate file type (images only for simple upload)
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       this.showStatus(
         "uploadStatus",
-        "Tipo de archivo no válido. Use JPG, PNG, WebP, MP4 o WebM",
+        "Tipo de archivo no válido. Use JPG, PNG o WebP",
         "error"
       );
       return;
     }
 
-    // Validate file size (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (5MB for base64)
+    if (file.size > 5 * 1024 * 1024) {
       this.showStatus(
         "uploadStatus",
-        "El archivo es demasiado grande. Máximo 10MB",
+        "El archivo es demasiado grande. Máximo 5MB",
         "error"
       );
       return;
     }
 
-    this.showStatus("uploadStatus", "Subiendo archivo...", "info");
+    this.showStatus("uploadStatus", "Procesando archivo...", "info");
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // Convert file to base64
+      const fileData = await this.fileToBase64(file);
 
-      const response = await fetch("/api/admin/upload", {
+      const response = await fetch("/api/admin/upload-simple", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`,
         },
-        body: formData,
+        body: JSON.stringify({
+          fileData: fileData,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        }),
       });
 
       const data = await response.json();
@@ -428,13 +429,13 @@ class AdminPanel {
         this.showFileDetailsForm();
         this.showStatus(
           "uploadStatus",
-          "Archivo subido exitosamente. Complete los detalles.",
+          "Archivo procesado exitosamente. Complete los detalles.",
           "success"
         );
       } else {
         this.showStatus(
           "uploadStatus",
-          data.error || "Error al subir archivo",
+          data.error || "Error al procesar archivo",
           "error"
         );
       }
@@ -626,6 +627,16 @@ class AdminPanel {
         element.style.display = "none";
       }, 5000);
     }
+  }
+
+  // Helper function to convert file to base64
+  fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   }
 }
 

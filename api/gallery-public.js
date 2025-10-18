@@ -1,4 +1,6 @@
 // Public Gallery API - serves gallery data to the main website
+import { getActiveItems } from "./shared/gallery-data.js";
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader("Access-Control-Allow-Credentials", true);
@@ -19,8 +21,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Import gallery data from admin system
-    // In production, this would come from your database
+    // Import gallery data from admin system - shared data source
+    // This should match the data structure in api/admin/gallery.js
     const galleryData = {
       images: [
         {
@@ -67,17 +69,15 @@ export default async function handler(req, res) {
       videos: [],
     };
 
+    // TODO: In a real implementation, this would fetch from the same data source as admin/gallery.js
+    // For now, we'll use the static data above, but uploaded images from admin won't appear here
+    // until we implement a shared data store (like Vercel KV, database, or file system)
+
     const { category, limit } = req.query;
 
-    // Filter active items only
-    let activeImages = galleryData.images.filter((item) => item.isActive);
-    let activeVideos = galleryData.videos.filter((item) => item.isActive);
-
-    // Filter by category if specified
-    if (category) {
-      activeImages = activeImages.filter((item) => item.category === category);
-      activeVideos = activeVideos.filter((item) => item.category === category);
-    }
+    // Get active items from shared data store
+    const activeData = getActiveItems(category);
+    let { images: activeImages, videos: activeVideos } = activeData;
 
     // Apply limit if specified
     if (limit) {
@@ -88,7 +88,7 @@ export default async function handler(req, res) {
 
     // Format for frontend consumption
     const formattedImages = activeImages.map((item) => ({
-      src: `images/${item.filename}`,
+      src: item.dataUrl || `images/${item.filename}`, // Use base64 data URL if available
       alt: item.title,
       title: item.title,
       description: item.description,
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
     }));
 
     const formattedVideos = activeVideos.map((item) => ({
-      src: `images/${item.filename}`,
+      src: item.dataUrl || `images/${item.filename}`,
       title: item.title,
       description: item.description,
       category: item.category,

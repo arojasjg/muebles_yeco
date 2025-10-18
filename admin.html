@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Muebles Yeco</title>
+    <link rel="icon" type="image/png" href="logo-transparent.png" />
+
+    <!-- Modern CSS Framework -->
+    <style>
+      :root {
+        --primary: #8b4513;
+        --primary-dark: #654321;
+        --primary-light: #a0522d;
+        --secondary: #2c1810;
+        --accent: #d4af37;
+        --success: #22c55e;
+        --error: #ef4444;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+        --text-dark: #1a1a1a;
+        --text-light: #666;
+        --bg-light: #faf8f5;
+        --bg-white: #ffffff;
+        --border: #e5e5e5;
+        --shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        --radius: 8px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+
+      /* Layout */
+      .admin-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .admin-header {
+        background: var(--bg-white);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+      }
+
+      .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      .admin-brand img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .admin-nav {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.9rem;
+      }
+
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .logout-btn {
+        background: var(--error);
+        color: white;
+      }
+
+      .logout-btn:hover {
+        background: #dc2626;
+      }
+
+      /* Main Content */
+      .admin-main {
+        flex: 1;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .admin-section {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .admin-section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Cards */
+      .admin-card {
+        background: var(--bg-white);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 1rem;
+        transition: var(--transition);
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #16a34a;
+      }
+
+      .btn-error {
+        background: var(--error);
+        color: white;
+      }
+
+      .btn-error:hover {
+        background: #dc2626;
+      }
+
+      .btn-secondary {
+        background: var(--border);
+        color: var(--text-dark);
+      }
+
+      .btn-secondary:hover {
+        background: #d1d5db;
+      }
+
+      /* File Upload */
+      .upload-area {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 3rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+      }
+
+      .upload-area:hover,
+      .upload-area.dragover {
+        border-color: var(--primary);
+        background: rgba(139, 69, 19, 0.05);
+      }
+
+      .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--text-light);
+      }
+
+      .upload-text {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+      }
+
+      .upload-hint {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      /* Gallery Grid */
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .gallery-item {
+        background: var(--bg-white);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+      }
+
+      .gallery-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+
+      .gallery-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .gallery-info {
+        padding: 1rem;
+      }
+
+      .gallery-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+      }
+
+      .gallery-description {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+      }
+
+      .gallery-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+
+      /* Status Messages */
+      .status-message {
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .status-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+
+      .status-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+
+      .status-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+      }
+
+      /* Loading */
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Login Form */
+      .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          135deg,
+          var(--primary-light),
+          var(--primary)
+        );
+      }
+
+      .login-card {
+        background: var(--bg-white);
+        padding: 3rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .login-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: var(--primary);
+        font-size: 2rem;
+        font-weight: 600;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .admin-header {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .admin-main {
+          padding: 1rem;
+        }
+
+        .admin-card {
+          padding: 1.5rem;
+        }
+
+        .gallery-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 1rem;
+        }
+      }
+
+      /* Utilities */
+      .hidden {
+        display: none !important;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .mb-1 {
+        margin-bottom: 0.5rem;
+      }
+      .mb-2 {
+        margin-bottom: 1rem;
+      }
+      .mb-3 {
+        margin-bottom: 1.5rem;
+      }
+      .mt-2 {
+        margin-top: 1rem;
+      }
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .gap-2 {
+        gap: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+      <div class="login-card">
+        <div class="login-title">
+          <img
+            src="logo-transparent.png"
+            alt="Logo"
+            style="width: 48px; height: 48px; margin-bottom: 1rem"
+          />
+          <div>Admin Panel</div>
+          <div
+            style="
+              font-size: 1rem;
+              font-weight: normal;
+              color: var(--text-light);
+            "
+          >
+            Muebles Yeco
+          </div>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <input type="text" id="username" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <input type="password" id="password" class="form-input" required />
+          </div>
+
+          <div id="loginStatus" class="status-message"></div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%">
+            <span id="loginBtnText">Iniciar Sesión</span>
+            <span id="loginLoader" class="loading hidden"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-container hidden">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-brand">
+          <img src="logo-transparent.png" alt="Logo" />
+          <span>Admin Panel - Muebles Yeco</span>
+        </div>
+
+        <nav class="admin-nav">
+          <button class="nav-btn active" data-section="gallery">Galería</button>
+          <button class="nav-btn" data-section="upload">Subir Archivos</button>
+          <button class="nav-btn logout-btn" id="logoutBtn">
+            Cerrar Sesión
+          </button>
+        </nav>
+      </header>
+
+      <!-- Main Content -->
+      <main class="admin-main">
+        <!-- Gallery Management Section -->
+        <section id="gallerySection" class="admin-section active">
+          <div class="admin-card">
+            <div class="card-header">
+              <h2 class="card-title">Gestión de Galería</h2>
+              <button class="btn btn-primary" id="refreshGallery">
+                🔄 Actualizar
+              </button>
+            </div>
+
+            <div class="flex gap-2 mb-3">
+              <select
+                id="categoryFilter"
+                class="form-select"
+                style="width: auto"
+              >
+                <option value="">Todas las categorías</option>
+                <option value="sala">Sala</option>
+                <option value="dormitorio">Dormitorio</option>
+                <option value="cocina">Cocina</option>
+                <option value="oficina">Oficina</option>
+                <option value="closet">Closet</option>
+              </select>
+
+              <select id="statusFilter" class="form-select" style="width: auto">
+                <option value="">Todos los estados</option>
+                <option value="true">Activos</option>
+                <option value="false">Inactivos</option>
+              </select>
+            </div>
+
+            <div id="galleryStatus" class="status-message"></div>
+            <div id="galleryGrid" class="gallery-grid"></div>
+          </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section id="uploadSection" class="admin-section">
+          <div class="admin-card">
+            <div class="card-header">
+              <h2 class="card-title">Subir Nuevos Archivos</h2>
+            </div>
+
+            <div id="uploadArea" class="upload-area">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">
+                Arrastra archivos aquí o haz clic para seleccionar
+              </div>
+              <div class="upload-hint">
+                Formatos soportados: JPG, PNG, WebP, MP4, WebM (máx. 10MB)
+              </div>
+              <input
+                type="file"
+                id="fileInput"
+                multiple
+                accept="image/*,video/*"
+                style="display: none"
+              />
+            </div>
+
+            <div id="uploadStatus" class="status-message"></div>
+
+            <!-- File Details Form -->
+            <div id="fileDetailsForm" class="hidden mt-2">
+              <h3 class="mb-2">Detalles del Archivo</h3>
+
+              <div class="form-group">
+                <label class="form-label">Título *</label>
+                <input type="text" id="fileTitle" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea
+                  id="fileDescription"
+                  class="form-textarea"
+                  placeholder="Descripción del mueble..."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Categoría *</label>
+                <select id="fileCategory" class="form-select" required>
+                  <option value="">Seleccionar categoría</option>
+                  <option value="sala">Sala</option>
+                  <option value="dormitorio">Dormitorio</option>
+                  <option value="cocina">Cocina</option>
+                  <option value="oficina">Oficina</option>
+                  <option value="closet">Closet</option>
+                </select>
+              </div>
+
+              <div class="flex gap-2">
+                <button type="button" class="btn btn-success" id="saveFileBtn">
+                  💾 Guardar en Galería
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="cancelFileBtn"
+                >
+                  ❌ Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div
+      id="editModal"
+      class="hidden"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div class="admin-card" style="width: 90%; max-width: 500px; margin: 0">
+        <div class="card-header">
+          <h3 class="card-title">Editar Elemento</h3>
+          <button id="closeEditModal" class="btn btn-secondary btn-small">
+            ✕
+          </button>
+        </div>
+
+        <form id="editForm">
+          <input type="hidden" id="editItemId" />
+
+          <div class="form-group">
+            <label class="form-label">Título</label>
+            <input type="text" id="editTitle" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea id="editDescription" class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <select id="editCategory" class="form-select" required>
+              <option value="sala">Sala</option>
+              <option value="dormitorio">Dormitorio</option>
+              <option value="cocina">Cocina</option>
+              <option value="oficina">Oficina</option>
+              <option value="closet">Closet</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select id="editStatus" class="form-select">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="submit" class="btn btn-success">
+              💾 Guardar Cambios
+            </button>
+            <button type="button" id="cancelEdit" class="btn btn-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+  </body>
+</html>

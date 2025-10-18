@@ -142,12 +142,30 @@ function handleScroll() {
 /**
  * Gallery setup with lazy loading
  */
-function setupGallery() {
-  galleryImages = furnitureImages.map((img, index) => ({
-    src: `images/${img}`,
-    alt: `Mueble artesanal de madera ${index + 1}`,
-    title: `Colección de Muebles ${index + 1}`,
-  }));
+async function setupGallery() {
+  try {
+    // Try to load from admin API first
+    const response = await fetch("/api/gallery-public");
+    if (response.ok) {
+      const data = await response.json();
+      galleryImages = [...data.data.images, ...data.data.videos];
+    } else {
+      // Fallback to static images
+      galleryImages = furnitureImages.map((img, index) => ({
+        src: `images/${img}`,
+        alt: `Mueble artesanal de melamina ${index + 1}`,
+        title: `Colección de Muebles ${index + 1}`,
+      }));
+    }
+  } catch (error) {
+    console.log("Using fallback gallery data");
+    // Fallback to static images
+    galleryImages = furnitureImages.map((img, index) => ({
+      src: `images/${img}`,
+      alt: `Mueble artesanal de melamina ${index + 1}`,
+      title: `Colección de Muebles ${index + 1}`,
+    }));
+  }
 
   // Create gallery items with fragment for better performance
   const fragment = document.createDocumentFragment();

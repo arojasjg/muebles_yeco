@@ -141,6 +141,19 @@ function handleScroll() {
 }
 
 /**
+ * localStorage helpers for uploaded images
+ */
+function getStoredUploadedImages() {
+  try {
+    const stored = localStorage.getItem("muebles_yeco_uploaded_images");
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.warn("Could not retrieve stored images:", error);
+    return [];
+  }
+}
+
+/**
  * Gallery setup with lazy loading
  */
 async function setupGallery() {
@@ -158,6 +171,19 @@ async function setupGallery() {
         title: `Colección de Muebles ${index + 1}`,
       }));
     }
+
+    // Add locally stored uploaded images
+    const storedImages = getStoredUploadedImages();
+    if (storedImages.length > 0) {
+      const formattedStoredImages = storedImages.map((img) => ({
+        src: img.dataUrl,
+        alt: img.title,
+        title: img.title,
+        description: img.description,
+        category: img.category,
+      }));
+      galleryImages = [...galleryImages, ...formattedStoredImages];
+    }
   } catch (error) {
     console.log("Using fallback gallery data");
     // Fallback to static images
@@ -166,6 +192,19 @@ async function setupGallery() {
       alt: `Mueble artesanal de melamina ${index + 1}`,
       title: `Colección de Muebles ${index + 1}`,
     }));
+
+    // Still try to add stored images even in fallback
+    const storedImages = getStoredUploadedImages();
+    if (storedImages.length > 0) {
+      const formattedStoredImages = storedImages.map((img) => ({
+        src: img.dataUrl,
+        alt: img.title,
+        title: img.title,
+        description: img.description,
+        category: img.category,
+      }));
+      galleryImages = [...galleryImages, ...formattedStoredImages];
+    }
   }
 
   // Create gallery items with fragment for better performance

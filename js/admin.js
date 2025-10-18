@@ -237,10 +237,20 @@ class AdminPanel {
       if (response.ok) {
         const data = await response.json();
         this.galleryData = data.data;
+
+        // Merge with locally stored uploaded images
+        const storedImages = this.getStoredUploadedImages();
+        if (storedImages.length > 0) {
+          this.galleryData.images = [
+            ...this.galleryData.images,
+            ...storedImages,
+          ];
+        }
+
         this.renderGallery();
         this.showStatus(
           "galleryStatus",
-          `Galería cargada: ${data.data.images.length} imágenes, ${data.data.videos.length} videos`,
+          `Galería cargada: ${this.galleryData.images.length} imágenes, ${this.galleryData.videos.length} videos`,
           "success"
         );
       } else {
@@ -481,12 +491,26 @@ class AdminPanel {
           description,
           category,
           type: this.uploadedFile.type,
+          dataUrl: this.uploadedFile.dataUrl, // Include Base64 data
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Store in localStorage for persistence
+        this.storeUploadedImageLocally({
+          id: data.data?.id || Date.now().toString(),
+          filename: this.uploadedFile.filename,
+          title,
+          description,
+          category,
+          dataUrl: this.uploadedFile.dataUrl,
+          uploadDate: new Date().toISOString(),
+          isActive: true,
+          type: this.uploadedFile.type,
+        });
+
         this.showStatus(
           "uploadStatus",
           "Elemento agregado a la galería exitosamente",
@@ -514,6 +538,73 @@ class AdminPanel {
     document.getElementById("fileCategory").value = "";
     document.getElementById("fileInput").value = "";
     this.uploadedFile = null;
+  }
+
+  // localStorage persistence for uploaded images
+  storeUploadedImageLocally(imageData) {
+    try {
+      const stored = this.getStoredUploadedImages();
+      stored.push(imageData);
+      localStorage.setItem(
+        "muebles_yeco_uploaded_images",
+        JSON.stringify(stored)
+      );
+    } catch (error) {
+      console.warn("Could not store image locally:", error);
+    }
+  }
+
+  getStoredUploadedImages() {
+    try {
+      const stored = localStorage.getItem("muebles_yeco_uploaded_images");
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.warn("Could not retrieve stored images:", error);
+      return [];
+    }
+  }
+
+  clearStoredUploadedImages() {
+    try {
+      localStorage.removeItem("muebles_yeco_uploaded_images");
+    } catch (error) {
+      console.warn("Could not clear stored images:", error);
+    }
+  }
+
+  updateLocalStoredImage(id, updateData) {
+    try {
+      const stored = this.getStoredUploadedImages();
+      const updatedImages = stored.map((img) => {
+        if (img.id === id) {
+          return { ...img, ...updateData };
+        }
+        return img;
+      });
+      localStorage.setItem(
+        "muebles_yeco_uploaded_images",
+        JSON.stringify(updatedImages)
+      );
+      return true;
+    } catch (error) {
+      console.warn("Could not update stored image:", error);
+      return false;
+    }
+  }
+
+  deleteLocalStoredImage(id) {
+    try {
+      const stored = this.getStoredUploadedImages();
+      const filteredImages = stored.filter((img) => img.id !== id);
+      localStorage.setItem(
+        "muebles_yeco_uploaded_images",
+        JSON.stringify(filteredImages)
+      );
+      return true;
+    } catch (error) {
+      console.warn("Could not delete stored image:", error);
+      return false;
+    }
   }
 
   editItem(id) {
@@ -547,6 +638,29 @@ class AdminPanel {
       return;
     }
 
+    // Check if this is a locally stored image
+    const storedImages = this.getStoredUploadedImages();
+    const isLocalImage = storedImages.some((img) => img.id === id);
+
+    if (isLocalImage) {
+      // Handle locally stored image edit
+      this.updateLocalStoredImage(id, {
+        title,
+        description,
+        category,
+        isActive,
+      });
+      this.closeEditModal();
+      this.loadGallery();
+      this.showStatus(
+        "galleryStatus",
+        "Elemento actualizado exitosamente (local)",
+        "success"
+      );
+      return;
+    }
+
+    // Handle server-side image edit
     try {
       const response = await fetch(`/api/admin/gallery?id=${id}`, {
         method: "PUT",
@@ -586,6 +700,31 @@ class AdminPanel {
       return;
     }
 
+    // Check if this is a locally stored image
+    const storedImages = this.getStoredUploadedImages();
+    const isLocalImage = storedImages.some((img) => img.id === id);
+
+    if (isLocalImage) {
+      // Handle locally stored image delete
+      const success = this.deleteLocalStoredImage(id);
+      if (success) {
+        this.loadGallery();
+        this.showStatus(
+          "galleryStatus",
+          "Elemento eliminado exitosamente (local)",
+          "success"
+        );
+      } else {
+        this.showStatus(
+          "galleryStatus",
+          "Error al eliminar elemento local",
+          "error"
+        );
+      }
+      return;
+    }
+
+    // Handle server-side image delete
     try {
       const response = await fetch(`/api/admin/gallery?id=${id}`, {
         method: "DELETE",

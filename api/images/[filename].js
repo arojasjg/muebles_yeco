@@ -1,6 +1,6 @@
 // Dynamic image serving API for uploaded files
 // This handles serving images that were uploaded through the admin panel
-import { getGalleryData } from "../shared/gallery-data.js";
+import { findUploadedImage } from "../shared/gallery-data.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -28,44 +28,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Filename required" });
     }
 
-    // Get gallery data
-    const galleryData = getGalleryData();
-
-    // Look for the image in uploaded images
-    const uploadedImage = galleryData.uploadedImages?.find(
-      (img) => img.filename === filename
-    );
+    // Find the uploaded image using the new storage system
+    const uploadedImage = findUploadedImage(filename);
 
     if (uploadedImage && uploadedImage.dataUrl) {
       // Extract base64 data and mime type
       const matches = uploadedImage.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-
-      if (matches) {
-        const mimeType = matches[1];
-        const base64Data = matches[2];
-        const buffer = Buffer.from(base64Data, "base64");
-
-        // Set appropriate headers
-        res.setHeader("Content-Type", mimeType);
-        res.setHeader("Content-Length", buffer.length);
-        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
-
-        return res.status(200).send(buffer);
-      }
-    }
-
-    // Also check in main images array
-    const mainImage = galleryData.images?.find(
-      (img) => img.filename === filename
-    );
-
-    if (
-      mainImage &&
-      mainImage.dataUrl &&
-      mainImage.dataUrl.startsWith("data:")
-    ) {
-      // Extract base64 data and mime type
-      const matches = mainImage.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
 
       if (matches) {
         const mimeType = matches[1];

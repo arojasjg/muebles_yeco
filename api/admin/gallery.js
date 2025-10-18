@@ -89,11 +89,11 @@ export default async function handler(req, res) {
           filename,
           title,
           description,
-          category,
+          category: itemCategory,
           type = "image",
         } = req.body;
 
-        if (!filename || !title || !category) {
+        if (!filename || !title || !itemCategory) {
           return res
             .status(400)
             .json({ error: "Filename, title, and category are required" });
@@ -104,7 +104,7 @@ export default async function handler(req, res) {
           filename,
           title,
           description: description || "",
-          category,
+          category: itemCategory,
           uploadDate: new Date().toISOString(),
           isActive: true,
           type,
@@ -124,10 +124,10 @@ export default async function handler(req, res) {
 
       case "PUT":
         // Update gallery item
-        const { id } = req.query;
+        const { id: updateId } = req.query;
         const updateData = req.body;
 
-        if (!id) {
+        if (!updateId) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
@@ -135,9 +135,9 @@ export default async function handler(req, res) {
 
         // Update in images array
         galleryData.images = galleryData.images.map((item) => {
-          if (item.id === id) {
+          if (item.id === updateId) {
             itemFound = true;
-            return { ...item, ...updateData, id }; // Preserve ID
+            return { ...item, ...updateData, id: updateId }; // Preserve ID
           }
           return item;
         });
@@ -145,9 +145,9 @@ export default async function handler(req, res) {
         // Update in videos array if not found in images
         if (!itemFound) {
           galleryData.videos = galleryData.videos.map((item) => {
-            if (item.id === id) {
+            if (item.id === updateId) {
               itemFound = true;
-              return { ...item, ...updateData, id }; // Preserve ID
+              return { ...item, ...updateData, id: updateId }; // Preserve ID
             }
             return item;
           });

@@ -238,14 +238,8 @@ class AdminPanel {
         const data = await response.json();
         this.galleryData = data.data;
 
-        // Merge with locally stored uploaded images
-        const storedImages = this.getStoredUploadedImages();
-        if (storedImages.length > 0) {
-          this.galleryData.images = [
-            ...this.galleryData.images,
-            ...storedImages,
-          ];
-        }
+        // With Cloudinary, all images are now stored permanently on the server
+        // No need for localStorage merging - everything comes from the API
 
         this.renderGallery();
         this.showStatus(
@@ -478,7 +472,36 @@ class AdminPanel {
       return;
     }
 
+    this.showStatus("uploadStatus", "Subiendo a Cloudinary...", "info");
+
     try {
+      // First upload to Cloudinary
+      const cloudinaryResponse = await fetch("/api/admin/upload-cloudinary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({
+          fileData: this.uploadedFile.dataUrl,
+          fileName: this.uploadedFile.filename,
+          fileType: this.uploadedFile.mimetype,
+          title,
+          category,
+        }),
+      });
+
+      const cloudinaryData = await cloudinaryResponse.json();
+
+      if (!cloudinaryResponse.ok) {
+        throw new Error(
+          cloudinaryData.error || "Error uploading to Cloudinary"
+        );
+      }
+
+      this.showStatus("uploadStatus", "Guardando en galería...", "info");
+
+      // Then save to gallery with Cloudinary URL
       const response = await fetch("/api/admin/gallery", {
         method: "POST",
         headers: {
@@ -491,29 +514,18 @@ class AdminPanel {
           description,
           category,
           type: this.uploadedFile.type,
-          dataUrl: this.uploadedFile.dataUrl, // Include Base64 data
+          // Use Cloudinary URL instead of dataUrl
+          imageUrl: cloudinaryData.data.url,
+          cloudinaryData: cloudinaryData.data, // Store full Cloudinary metadata
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Store in localStorage for persistence
-        this.storeUploadedImageLocally({
-          id: data.data?.id || Date.now().toString(),
-          filename: this.uploadedFile.filename,
-          title,
-          description,
-          category,
-          dataUrl: this.uploadedFile.dataUrl,
-          uploadDate: new Date().toISOString(),
-          isActive: true,
-          type: this.uploadedFile.type,
-        });
-
         this.showStatus(
           "uploadStatus",
-          "Elemento agregado a la galería exitosamente",
+          "¡Imagen subida exitosamente a Cloudinary y agregada a la galería!",
           "success"
         );
         this.cancelFileUpload();
@@ -549,6 +561,9 @@ class AdminPanel {
         "muebles_yeco_uploaded_images",
         JSON.stringify(stored)
       );
+
+      // Auto-backup to server for persistence
+      this.backupImagesToServer(stored);
     } catch (error) {
       console.warn("Could not store image locally:", error);
     }
@@ -585,6 +600,9 @@ class AdminPanel {
         "muebles_yeco_uploaded_images",
         JSON.stringify(updatedImages)
       );
+
+      // Auto-backup after update
+      this.backupImagesToServer(updatedImages);
       return true;
     } catch (error) {
       console.warn("Could not update stored image:", error);
@@ -600,10 +618,50 @@ class AdminPanel {
         "muebles_yeco_uploaded_images",
         JSON.stringify(filteredImages)
       );
+
+      // Auto-backup after delete
+      this.backupImagesToServer(filteredImages);
       return true;
     } catch (error) {
       console.warn("Could not delete stored image:", error);
       return false;
+    }
+  }
+
+  // Backup images to server for persistence
+  async backupImagesToServer(images) {
+    try {
+      await fetch("/api/admin/backup-images", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ images }),
+      });
+    } catch (error) {
+      console.warn("Could not backup images to server:", error);
+    }
+  }
+
+  // Restore images from server backup
+  async restoreImagesFromServer() {
+    try {
+      const response = await fetch("/api/admin/backup-images");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data.images && data.data.images.length > 0) {
+          localStorage.setItem(
+            "muebles_yeco_uploaded_images",
+            JSON.stringify(data.data.images)
+          );
+          return data.data.images.length;
+        }
+      }
+      return 0;
+    } catch (error) {
+      console.warn("Could not restore images from server:", error);
+      return 0;
     }
   }
 

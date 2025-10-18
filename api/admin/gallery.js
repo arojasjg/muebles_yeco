@@ -81,7 +81,10 @@ export default async function handler(req, res) {
           uploadDate: new Date().toISOString(),
           isActive: true,
           type,
-          dataUrl: req.body.dataUrl || null, // For base64 images
+          // Support both Cloudinary URLs and base64 data
+          imageUrl: req.body.imageUrl || null, // Cloudinary URL
+          dataUrl: req.body.dataUrl || null, // Base64 fallback
+          cloudinaryData: req.body.cloudinaryData || null, // Full Cloudinary metadata
         };
 
         const addedItem = addGalleryItem(newItem);

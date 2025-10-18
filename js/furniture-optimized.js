@@ -141,7 +141,7 @@ function handleScroll() {
 }
 
 /**
- * localStorage helpers for uploaded images
+ * localStorage helpers for uploaded images (EXACT same as admin panel)
  */
 function getStoredUploadedImages() {
   try {
@@ -158,24 +158,33 @@ function getStoredUploadedImages() {
  */
 async function setupGallery() {
   try {
-    // Try to load from admin API first
-    const response = await fetch("/api/gallery-public");
+    // Use the SAME API as admin panel (admin API allows GET without auth)
+    const response = await fetch("/api/admin/gallery");
     if (response.ok) {
       const data = await response.json();
-      galleryImages = [...data.data.images, ...data.data.videos];
 
-      // Add locally stored uploaded images (same approach as admin panel)
-      const storedImages = getStoredUploadedImages();
-      if (storedImages.length > 0) {
-        const formattedStoredImages = storedImages.map((img) => ({
-          src: img.dataUrl,
-          alt: img.title,
-          title: img.title,
-          description: img.description,
-          category: img.category,
-        }));
-        galleryImages = [...galleryImages, ...formattedStoredImages];
-      }
+      // With Cloudinary, all images come from the server API
+      let galleryData = data.data;
+
+      // Format for frontend display (convert admin format to frontend format)
+      const formattedImages = galleryData.images.map((item) => ({
+        src: item.imageUrl || item.dataUrl || `images/${item.filename}`,
+        alt: item.title,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+      }));
+
+      const formattedVideos = galleryData.videos.map((item) => ({
+        src: item.dataUrl || item.imageUrl || `images/${item.filename}`,
+        alt: item.title,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        type: "video",
+      }));
+
+      galleryImages = [...formattedImages, ...formattedVideos];
     } else {
       // Fallback to static images only if API fails
       galleryImages = furnitureImages.map((img, index) => ({
@@ -184,7 +193,7 @@ async function setupGallery() {
         title: `Colección de Muebles ${index + 1}`,
       }));
 
-      // Only add localStorage images in fallback mode when API is not available
+      // Add localStorage images in fallback mode
       const storedImages = getStoredUploadedImages();
       if (storedImages.length > 0) {
         const formattedStoredImages = storedImages.map((img) => ({

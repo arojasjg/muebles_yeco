@@ -114,25 +114,31 @@ export default async function handler(req, res) {
       case "PUT":
         // Update gallery item in Supabase
         const { id: updateId } = req.query;
-        const { title, description, category, isActive, tags } = req.body;
+        const {
+          title: updateTitle,
+          description: updateDescription,
+          category: updateCategory,
+          isActive,
+          tags: updateTags,
+        } = req.body;
 
         if (!updateId) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
         const updateData = {};
-        if (title !== undefined) {
-          updateData.title = title;
-          updateData.alt_text = title;
-          updateData.seo_title = title;
+        if (updateTitle !== undefined) {
+          updateData.title = updateTitle;
+          updateData.alt_text = updateTitle;
+          updateData.seo_title = updateTitle;
         }
-        if (description !== undefined) {
-          updateData.description = description;
-          updateData.seo_description = description;
+        if (updateDescription !== undefined) {
+          updateData.description = updateDescription;
+          updateData.seo_description = updateDescription;
         }
-        if (category !== undefined) updateData.category = category;
+        if (updateCategory !== undefined) updateData.category = updateCategory;
         if (isActive !== undefined) updateData.is_active = isActive;
-        if (tags !== undefined) updateData.tags = tags;
+        if (updateTags !== undefined) updateData.tags = updateTags;
 
         const updatedItem = await SupabaseService.updateGalleryItem(
           updateId,
@@ -154,8 +160,8 @@ export default async function handler(req, res) {
         }
 
         // First get the item to get the file path for storage deletion
-        const items = await SupabaseService.getGalleryItems();
-        const itemToDelete = items.find((item) => item.id === deleteId);
+        const allItems = await SupabaseService.getGalleryItems();
+        const itemToDelete = allItems.find((item) => item.id === deleteId);
 
         if (!itemToDelete) {
           return res.status(404).json({ error: "Gallery item not found" });

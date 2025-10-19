@@ -239,8 +239,10 @@ async function setupGallery() {
   }
 
   // Create gallery items with fragment for better performance
+  // Limit to 12 images on landing page
   const fragment = document.createDocumentFragment();
-  galleryImages.forEach((image, index) => {
+  const displayImages = galleryImages.slice(0, 12);
+  displayImages.forEach((image, index) => {
     fragment.appendChild(createGalleryItem(image, index));
   });
   DOM.galleryGrid?.appendChild(fragment);
@@ -916,7 +918,7 @@ function renderModalGallery(items) {
   grid.innerHTML = items
     .map(
       (item, index) => `
-    <div class="modal-gallery-item" onclick="openLightbox(${index})">
+    <div class="modal-gallery-item" onclick="openLightboxFromModal(${index})">
       <img src="${item.src}" alt="${item.title}" loading="lazy">
       <div class="modal-gallery-info">
         <div class="modal-gallery-title">${item.title}</div>
@@ -932,6 +934,21 @@ function renderModalGallery(items) {
 
   // Update global gallery images for lightbox
   galleryImages = items;
+}
+
+/**
+ * Open lightbox from modal and close modal first
+ */
+function openLightboxFromModal(index) {
+  // Close the modal first
+  const modal = document.querySelector(".gallery-modal");
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = "";
+  }
+
+  // Then open the lightbox
+  openLightbox(index);
 }
 
 /**

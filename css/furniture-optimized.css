@@ -832,7 +832,7 @@ section {
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.95);
-    z-index: 2000;
+    z-index: 10001;
     align-items: center;
     justify-content: center;
 }

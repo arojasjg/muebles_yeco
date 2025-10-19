@@ -766,7 +766,7 @@ function showFullGallery() {
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
       cursor: pointer;
-      min-height: 100px;
+      min-height: 150px;
     }
     
     .modal-gallery-item:hover {

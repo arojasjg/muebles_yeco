@@ -870,7 +870,7 @@ class ImageGallery {
       this._showLoading(true);
       this.state.loading = true;
 
-      const response = await fetch("/api/gallery-supabase");
+      const response = await fetch("/api/public?action=gallery");
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
@@ -980,7 +980,7 @@ class ImageGallery {
     this._showLoading(true);
 
     try {
-      const response = await fetch("/api/admin/upload-supabase", {
+      const response = await fetch("/api/admin?action=upload", {
         method: "POST",
         body: formData,
       });
@@ -1027,7 +1027,7 @@ class ImageGallery {
    */
   async _deleteImageFromServer(imageName) {
     try {
-      const response = await fetch("/api/admin/gallery", {
+      const response = await fetch("/api/admin?action=gallery", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

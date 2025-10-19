@@ -128,7 +128,7 @@ class AdminPanel {
     }
 
     try {
-      const response = await fetch("/api/admin/auth", {
+      const response = await fetch("/api/admin?action=auth", {
         headers: {
           Authorization: `Bearer ${this.token}`,
         },
@@ -158,7 +158,7 @@ class AdminPanel {
     status.style.display = "none";
 
     try {
-      const response = await fetch("/api/admin/auth", {
+      const response = await fetch("/api/admin?action=auth", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +228,7 @@ class AdminPanel {
 
   async loadGallery() {
     try {
-      const response = await fetch("/api/admin/gallery", {
+      const response = await fetch("/api/admin?action=gallery", {
         headers: {
           Authorization: `Bearer ${this.token}`,
         },
@@ -412,7 +412,7 @@ class AdminPanel {
       // Convert file to base64
       const fileData = await this.fileToBase64(file);
 
-      const response = await fetch("/api/admin/upload-supabase", {
+      const response = await fetch("/api/admin?action=upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -476,7 +476,7 @@ class AdminPanel {
 
     try {
       // Upload to Supabase (all-in-one operation)
-      const supabaseResponse = await fetch("/api/admin/upload-supabase", {
+      const supabaseResponse = await fetch("/api/admin?action=upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -542,7 +542,7 @@ class AdminPanel {
   // Backup images to server for persistence
   async backupImagesToServer(images) {
     try {
-      await fetch("/api/admin/backup-images", {
+      await fetch("/api/admin?action=backup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -558,7 +558,7 @@ class AdminPanel {
   // Restore images from server backup
   async restoreImagesFromServer() {
     try {
-      const response = await fetch("/api/admin/backup-images");
+      const response = await fetch("/api/admin?action=backup");
       if (response.ok) {
         const data = await response.json();
         if (data.data.images && data.data.images.length > 0) {
@@ -609,7 +609,7 @@ class AdminPanel {
 
     // All images are now stored on server with Cloudinary - direct API update
     try {
-      const response = await fetch(`/api/admin/gallery?id=${id}`, {
+      const response = await fetch(`/api/admin?action=gallery&id=${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -649,7 +649,7 @@ class AdminPanel {
 
     // All images are now stored on server with Cloudinary - direct API delete
     try {
-      const response = await fetch(`/api/admin/gallery?id=${id}`, {
+      const response = await fetch(`/api/admin?action=gallery&id=${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${this.token}`,

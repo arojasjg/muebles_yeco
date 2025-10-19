@@ -1,11 +1,6 @@
-// Gallery Management API for Vercel
+// Gallery Management API with Supabase Backend
 import { verifyAdminToken } from "./auth.js";
-import {
-  getGalleryData,
-  addGalleryItem,
-  updateGalleryItem,
-  deleteGalleryItem,
-} from "../shared/gallery-data.js";
+import { SupabaseService } from "../../lib/supabase.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -33,61 +28,82 @@ export default async function handler(req, res) {
 
     switch (req.method) {
       case "GET":
-        // Get all gallery items
+        // Get all gallery items from Supabase
         const { category, active } = req.query;
-        const galleryData = getGalleryData();
-        let items = [...galleryData.images, ...galleryData.videos];
 
-        if (category) {
-          items = items.filter((item) => item.category === category);
-        }
+        const filters = {};
+        if (category) filters.category = category;
+        if (active !== undefined) filters.isActive = active === "true";
 
-        if (active !== undefined) {
-          items = items.filter((item) => item.isActive === (active === "true"));
-        }
+        const items = await SupabaseService.getGalleryItems(filters);
+
+        // Format for compatibility with existing frontend
+        const formattedItems = items.map((item) => ({
+          id: item.id,
+          filename: item.filename,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          imageUrl: item.public_url,
+          publicUrl: item.public_url,
+          isActive: item.is_active,
+          uploadDate: item.created_at,
+          type: "image",
+          tags: item.tags || [],
+          supabaseData: {
+            path: item.file_path,
+            size: item.file_size,
+            mimeType: item.mime_type,
+          },
+        }));
 
         return res.status(200).json({
           success: true,
           data: {
-            images: galleryData.images,
-            videos: galleryData.videos,
-            filtered: items,
-            total: items.length,
+            images: formattedItems,
+            videos: [], // Videos will be handled separately if needed
+            total: formattedItems.length,
           },
         });
 
       case "POST":
-        // Add new gallery item
+        // Add new gallery item to Supabase
         const {
           filename,
           title,
           description,
           category: itemCategory,
-          type = "image",
+          publicUrl,
+          filePath,
+          fileSize,
+          mimeType,
+          tags,
         } = req.body;
 
-        if (!filename || !title || !itemCategory) {
-          return res
-            .status(400)
-            .json({ error: "Filename, title, and category are required" });
+        if (!filename || !title || !itemCategory || !publicUrl) {
+          return res.status(400).json({
+            error: "Filename, title, category, and publicUrl are required",
+          });
         }
 
         const newItem = {
-          id: Date.now().toString(),
-          filename,
           title,
           description: description || "",
           category: itemCategory,
-          uploadDate: new Date().toISOString(),
-          isActive: true,
-          type,
-          // Support both Cloudinary URLs and base64 data
-          imageUrl: req.body.imageUrl || null, // Cloudinary URL
-          dataUrl: req.body.dataUrl || null, // Base64 fallback
-          cloudinaryData: req.body.cloudinaryData || null, // Full Cloudinary metadata
+          filename,
+          file_path: filePath || `images/${itemCategory}/${filename}`,
+          file_size: fileSize || 0,
+          mime_type: mimeType || "image/jpeg",
+          public_url: publicUrl,
+          alt_text: title,
+          tags: tags || [],
+          seo_title: title,
+          seo_description: description || title,
+          is_active: true,
+          sort_order: 0,
         };
 
-        const addedItem = addGalleryItem(newItem);
+        const addedItem = await SupabaseService.insertGalleryItem(newItem);
 
         return res.status(201).json({
           success: true,
@@ -96,37 +112,60 @@ export default async function handler(req, res) {
         });
 
       case "PUT":
-        // Update gallery item
+        // Update gallery item in Supabase
         const { id: updateId } = req.query;
-        const updateData = req.body;
+        const { title, description, category, isActive, tags } = req.body;
 
         if (!updateId) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
-        const itemFound = updateGalleryItem(updateId, updateData);
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (category !== undefined) updateData.category = category;
+        if (isActive !== undefined) updateData.is_active = isActive;
+        if (tags !== undefined) updateData.tags = tags;
+        if (title !== undefined) updateData.alt_text = title;
+        if (title !== undefined) updateData.seo_title = title;
+        if (description !== undefined) updateData.seo_description = description;
 
-        if (!itemFound) {
-          return res.status(404).json({ error: "Gallery item not found" });
-        }
+        const updatedItem = await SupabaseService.updateGalleryItem(
+          updateId,
+          updateData
+        );
 
         return res.status(200).json({
           success: true,
+          data: updatedItem,
           message: "Gallery item updated successfully",
         });
 
       case "DELETE":
-        // Delete gallery item
+        // Delete gallery item from Supabase
         const { id: deleteId } = req.query;
 
         if (!deleteId) {
           return res.status(400).json({ error: "Item ID is required" });
         }
 
-        const itemDeleted = deleteGalleryItem(deleteId);
+        // First get the item to get the file path for storage deletion
+        const items = await SupabaseService.getGalleryItems();
+        const itemToDelete = items.find((item) => item.id === deleteId);
 
-        if (!itemDeleted) {
+        if (!itemToDelete) {
           return res.status(404).json({ error: "Gallery item not found" });
+        }
+
+        // Delete from database
+        await SupabaseService.deleteGalleryItem(deleteId);
+
+        // Delete file from storage
+        try {
+          await SupabaseService.deleteFile(itemToDelete.file_path);
+        } catch (error) {
+          console.warn("Could not delete file from storage:", error);
+          // Continue even if file deletion fails
         }
 
         return res.status(200).json({

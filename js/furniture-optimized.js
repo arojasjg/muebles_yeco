@@ -140,51 +140,48 @@ function handleScroll() {
   }
 }
 
-/**
- * localStorage helpers for uploaded images (EXACT same as admin panel)
- */
-function getStoredUploadedImages() {
-  try {
-    const stored = localStorage.getItem("muebles_yeco_uploaded_images");
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.warn("Could not retrieve stored images:", error);
-    return [];
-  }
-}
+// REMOVED: localStorage helpers - all images now come from Cloudinary via server API
 
 /**
  * Gallery setup with lazy loading
  */
 async function setupGallery() {
   try {
-    // Use the SAME API as admin panel (admin API allows GET without auth)
-    const response = await fetch("/api/admin/gallery");
+    // Use Supabase-powered public gallery API
+    const response = await fetch("/api/gallery-supabase");
     if (response.ok) {
       const data = await response.json();
 
-      // With Cloudinary, all images come from the server API
-      let galleryData = data.data;
-
-      // Format for frontend display (convert admin format to frontend format)
-      const formattedImages = galleryData.images.map((item) => ({
-        src: item.imageUrl || item.dataUrl || `images/${item.filename}`,
-        alt: item.title,
+      // Images come directly from Supabase with optimized format
+      galleryImages = data.data.images.map((item) => ({
+        id: item.id,
+        src: item.src,
+        alt: item.alt,
         title: item.title,
         description: item.description,
         category: item.category,
+        tags: item.tags || [],
+        // Additional metadata for enhanced features
+        width: item.width,
+        height: item.height,
+        fileSize: item.fileSize,
+        mimeType: item.mimeType,
+        createdAt: item.createdAt,
       }));
 
-      const formattedVideos = galleryData.videos.map((item) => ({
-        src: item.dataUrl || item.imageUrl || `images/${item.filename}`,
-        alt: item.title,
-        title: item.title,
-        description: item.description,
-        category: item.category,
-        type: "video",
-      }));
-
-      galleryImages = [...formattedImages, ...formattedVideos];
+      // Add videos if any (future enhancement)
+      if (data.data.videos && data.data.videos.length > 0) {
+        const formattedVideos = data.data.videos.map((item) => ({
+          id: item.id,
+          src: item.src,
+          alt: item.alt,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          type: "video",
+        }));
+        galleryImages = [...galleryImages, ...formattedVideos];
+      }
     } else {
       // Fallback to static images only if API fails
       galleryImages = furnitureImages.map((img, index) => ({

@@ -9,10 +9,6 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
-    },
-    {
-      "source": "/images/upload_:filename",
-      "destination": "/api/images/:filename"
     }
   ],
   "headers": [

@@ -120,20 +120,8 @@ export function addGalleryItem(item) {
   if (item.type === "video") {
     data.videos.push(item);
   } else {
-    // Check if it's an uploaded image with Base64 data
-    if (item.dataUrl && item.dataUrl.startsWith("data:")) {
-      // Store uploaded images separately with Base64 data
-      data.uploadedImages.push(item);
-      // Also add to main images array for display
-      const imageItem = {
-        ...item,
-        imageUrl: item.dataUrl, // Use Base64 data URL directly
-      };
-      data.images.push(imageItem);
-    } else {
-      // Regular image with file path
-      data.images.push(item);
-    }
+    // All images now use Cloudinary URLs - simplified storage
+    data.images.push(item);
   }
 
   saveGalleryData(data);

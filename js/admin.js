@@ -273,10 +273,17 @@ class AdminPanel {
                 ${
                   item.type === "video"
                     ? `<video class="gallery-image" controls>
-                        <source src="images/${item.filename}" type="video/mp4">
+                        <source src="${
+                          item.publicUrl ||
+                          item.imageUrl ||
+                          `images/${item.filename}`
+                        }" type="video/mp4">
                     </video>`
                     : `<img src="${
-                        item.dataUrl || `images/${item.filename}`
+                        item.publicUrl ||
+                        item.imageUrl ||
+                        item.dataUrl ||
+                        `images/${item.filename}`
                       }" alt="${item.title}" class="gallery-image">`
                 }
                 <div class="gallery-info">

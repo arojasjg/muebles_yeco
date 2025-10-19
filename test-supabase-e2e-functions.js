@@ -126,7 +126,7 @@ async function verifyImageInSupabase(imageId) {
 // Step 3: Verify Image in Landing Page (via Public API)
 async function verifyImageInLanding(imageId) {
   try {
-    const response = await fetch("/api/gallery-supabase");
+    const response = await fetch("/api/gallery");
     const data = await response.json();
 
     if (response.ok) {
@@ -207,7 +207,7 @@ async function confirmImageDeleted(imageId) {
     const stillInDB = dbData.data.images.find((img) => img.id === imageId);
 
     // Check public API
-    const publicResponse = await fetch("/api/gallery-supabase");
+    const publicResponse = await fetch("/api/gallery");
     const publicData = await publicResponse.json();
     const stillInPublic = publicData.data.images.find(
       (img) => img.id === imageId

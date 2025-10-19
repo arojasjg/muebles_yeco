@@ -140,7 +140,19 @@ function handleScroll() {
   }
 }
 
-// REMOVED: localStorage helpers - all images now come from Cloudinary via server API
+// REMOVED: localStorage helpers - all images now come from Supabase via server API
+
+/**
+ * Get stored uploaded images (fallback only)
+ */
+function getStoredUploadedImages() {
+  try {
+    const stored = localStorage.getItem("muebles_yeco_uploaded_images");
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    return [];
+  }
+}
 
 /**
  * Gallery setup with lazy loading
@@ -148,7 +160,7 @@ function handleScroll() {
 async function setupGallery() {
   try {
     // Use Supabase-powered public gallery API
-    const response = await fetch("/api/gallery-supabase");
+    const response = await fetch("/api/gallery");
     if (response.ok) {
       const data = await response.json();
 
@@ -864,7 +876,7 @@ async function loadModalGallery() {
 
   try {
     // Try to load from admin API
-    const response = await fetch("/api/gallery-public");
+    const response = await fetch("/api/gallery");
     let items = [];
 
     if (response.ok) {

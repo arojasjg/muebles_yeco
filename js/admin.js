@@ -238,8 +238,8 @@ class AdminPanel {
         const data = await response.json();
         this.galleryData = data.data;
 
-        // With Cloudinary, all images are now stored permanently on the server
-        // No need for localStorage merging - everything comes from the API
+        // All images are stored in Supabase
+        // Everything comes from the API
 
         this.renderGallery();
         this.showStatus(
@@ -458,7 +458,7 @@ class AdminPanel {
       return;
     }
 
-    this.showStatus("uploadStatus", "Subiendo a Cloudinary...", "info");
+    this.showStatus("uploadStatus", "Subiendo a Supabase...", "info");
 
     try {
       // Upload to Supabase (all-in-one operation)
@@ -515,13 +515,8 @@ class AdminPanel {
     this.uploadedFile = null;
   }
 
-  // REMOVED: localStorage functions - all images now use Cloudinary permanent storage
-
-  // REMOVED: All images now come from server API with Cloudinary URLs
-
-  // REMOVED: No localStorage to clear - using Cloudinary permanent storage
-
-  // REMOVED: Updates now go directly to server API
+  // All images stored in Supabase
+  // Updates go directly to server API via Supabase
 
   // REMOVED: Deletes now go directly to server API
 
@@ -593,7 +588,7 @@ class AdminPanel {
       return;
     }
 
-    // All images are now stored on server with Cloudinary - direct API update
+    // All images stored in Supabase - direct API update
     try {
       const response = await fetch(`/api/admin/gallery?id=${id}`, {
         method: "PUT",
@@ -633,7 +628,7 @@ class AdminPanel {
       return;
     }
 
-    // All images are now stored on server with Cloudinary - direct API delete
+    // All images stored in Supabase - direct API delete
     try {
       const response = await fetch(`/api/admin/gallery?id=${id}`, {
         method: "DELETE",

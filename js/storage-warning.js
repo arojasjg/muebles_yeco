@@ -242,14 +242,10 @@ class StorageWarning {
         • CDN global automático<br>
         • Costo: ~$0.15/GB<br><br>
         
-        <strong>2. Cloudinary</strong><br>
-        • Optimización automática de imágenes<br>
-        • Múltiples formatos (WebP, AVIF)<br>
-        • Plan gratuito hasta 25GB<br><br>
-        
-        <strong>3. Supabase Storage</strong><br>
+        <strong>2. Supabase Storage (IMPLEMENTADO)</strong><br>
         • Muy económico<br>
         • Base de datos incluida<br>
+        • CDN global<br>
         • Plan gratuito hasta 1GB<br><br>
         
         <em>Contacte al desarrollador para implementar almacenamiento permanente.</em>

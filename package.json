@@ -10,7 +10,9 @@
     "upload-images": "node scripts/upload-images-to-supabase.js",
     "optimize:logo": "node scripts/optimize-logo.js",
     "optimize:images": "node scripts/optimize-images-sharp.js",
-    "optimize:all": "npm run optimize:logo && npm run optimize:images"
+    "optimize:all": "npm run optimize:logo && npm run optimize:images",
+    "minify": "node scripts/minify-all.js",
+    "build": "npm run minify"
   },
   "keywords": [
     "muebles",

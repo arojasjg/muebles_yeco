@@ -63,7 +63,8 @@ async function handleGet(req, res) {
   if (category) filters.category = category;
   if (active !== undefined) filters.isActive = active === "true";
 
-  const items = await SupabaseService.getGalleryItems(filters);
+  // Use ADMIN service to bypass RLS and see all items
+  const items = await SupabaseAdminService.getGalleryItems(filters);
 
   const formattedItems = items.map((item) => ({
     id: item.id,
@@ -183,8 +184,8 @@ async function handleDelete(req, res) {
     return res.status(400).json({ error: "Item ID is required" });
   }
 
-  // Get item details for storage cleanup
-  const items = await SupabaseService.getGalleryItems();
+  // Get item details for storage cleanup using ADMIN service
+  const items = await SupabaseAdminService.getGalleryItems();
   const itemToDelete = items.find((item) => item.id == id);
 
   if (!itemToDelete) {

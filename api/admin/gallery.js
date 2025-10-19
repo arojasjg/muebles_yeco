@@ -121,14 +121,18 @@ export default async function handler(req, res) {
         }
 
         const updateData = {};
-        if (title !== undefined) updateData.title = title;
-        if (description !== undefined) updateData.description = description;
+        if (title !== undefined) {
+          updateData.title = title;
+          updateData.alt_text = title;
+          updateData.seo_title = title;
+        }
+        if (description !== undefined) {
+          updateData.description = description;
+          updateData.seo_description = description;
+        }
         if (category !== undefined) updateData.category = category;
         if (isActive !== undefined) updateData.is_active = isActive;
         if (tags !== undefined) updateData.tags = tags;
-        if (title !== undefined) updateData.alt_text = title;
-        if (title !== undefined) updateData.seo_title = title;
-        if (description !== undefined) updateData.seo_description = description;
 
         const updatedItem = await SupabaseService.updateGalleryItem(
           updateId,

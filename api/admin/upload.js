@@ -1,21 +1,6 @@
-// File Upload API for Vercel with Cloudinary integration
+// Image Upload API - Dedicated Endpoint (Vercel Pro)
 import { verifyAdminToken } from "./auth.js";
-import formidable from "formidable";
-import { v2 as cloudinary } from "cloudinary";
-
-// Configure Cloudinary (you'll need to set these environment variables)
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Disable body parser for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import { SupabaseService } from "../../lib/supabase.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -40,18 +25,14 @@ export default async function handler(req, res) {
     // Verify admin authentication
     verifyAdminToken(req);
 
-    // Parse the multipart form data
-    const form = formidable({
-      maxFileSize: 10 * 1024 * 1024, // 10MB limit
-      keepExtensions: true,
-    });
+    const { fileData, fileName, fileType, title, description, category, tags } =
+      req.body;
 
-    const [fields, files] = await form.parse(req);
-
-    const file = Array.isArray(files.file) ? files.file[0] : files.file;
-
-    if (!file) {
-      return res.status(400).json({ error: "No file uploaded" });
+    if (!fileData || !fileName || !fileType || !title || !category) {
+      return res.status(400).json({
+        error:
+          "Missing required fields: fileData, fileName, fileType, title, category",
+      });
     }
 
     // Validate file type
@@ -60,72 +41,90 @@ export default async function handler(req, res) {
       "image/jpg",
       "image/png",
       "image/webp",
-      "video/mp4",
-      "video/webm",
+      "image/avif",
     ];
-    if (!allowedTypes.includes(file.mimetype)) {
+    if (!allowedTypes.includes(fileType)) {
       return res.status(400).json({
-        error: "Invalid file type. Allowed: JPEG, PNG, WebP, MP4, WebM",
+        error: "Invalid file type. Allowed: JPEG, PNG, WebP, AVIF",
       });
     }
 
-    // Determine resource type
-    const resourceType = file.mimetype.startsWith("video/") ? "video" : "image";
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024;
+    const base64Data = fileData.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
 
-    // Upload to Cloudinary
-    const uploadResult = await cloudinary.uploader.upload(file.filepath, {
-      folder: "muebles-yeco",
-      resource_type: resourceType,
-      public_id: `${Date.now()}_${file.originalFilename?.replace(
-        /[^a-zA-Z0-9.-]/g,
-        "_"
-      )}`,
-      transformation:
-        resourceType === "image"
-          ? [
-              {
-                width: 1200,
-                height: 1200,
-                crop: "limit",
-                quality: "auto:good",
-              },
-              { format: "auto" },
-            ]
-          : undefined,
-    });
-
-    // Generate thumbnail for videos
-    let thumbnailUrl = null;
-    if (resourceType === "video") {
-      const thumbnailResult = await cloudinary.uploader.upload(
-        uploadResult.public_id,
-        {
-          resource_type: "video",
-          format: "jpg",
-          transformation: [
-            { width: 400, height: 300, crop: "fill" },
-            { start_offset: "1" }, // Get frame at 1 second
-          ],
-        }
-      );
-      thumbnailUrl = thumbnailResult.secure_url;
+    if (buffer.length > maxSize) {
+      return res.status(400).json({
+        error: "File too large. Maximum 10MB allowed.",
+      });
     }
 
+    // Generate unique filename
+    const timestamp = Date.now();
+    const sanitizedTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const extension = fileName.split(".").pop();
+    const uniqueFileName = `${sanitizedTitle}-${timestamp}.${extension}`;
+
+    // Upload to Supabase Storage
+    const uploadResult = await SupabaseService.uploadImage(
+      buffer,
+      uniqueFileName,
+      category
+    );
+
+    // Prepare gallery item data
+    const galleryItemData = {
+      title,
+      description: description || "",
+      category,
+      filename: uniqueFileName,
+      file_path: uploadResult.path,
+      file_size: buffer.length,
+      mime_type: fileType,
+      public_url: uploadResult.publicUrl,
+      alt_text: title,
+      tags: tags ? (Array.isArray(tags) ? tags : [tags]) : [],
+      seo_title: title,
+      seo_description: description || title,
+      is_active: true,
+      sort_order: 0,
+    };
+
+    // Save to database
+    const galleryItem = await SupabaseService.insertGalleryItem(
+      galleryItemData
+    );
+
+    // Return comprehensive response
     return res.status(200).json({
       success: true,
       data: {
-        filename: uploadResult.public_id,
-        originalName: file.originalFilename,
-        url: uploadResult.secure_url,
-        thumbnailUrl,
-        size: file.size,
-        type: resourceType,
-        mimetype: file.mimetype,
-        width: uploadResult.width,
-        height: uploadResult.height,
-        cloudinaryId: uploadResult.public_id,
+        id: galleryItem.id,
+        title: galleryItem.title,
+        description: galleryItem.description,
+        category: galleryItem.category,
+        filename: galleryItem.filename,
+        originalName: fileName,
+        type: "image",
+        mimetype: fileType,
+        size: galleryItem.file_size,
+        publicUrl: galleryItem.public_url,
+        url: galleryItem.public_url,
+        tags: galleryItem.tags,
+        isActive: galleryItem.is_active,
+        createdAt: galleryItem.created_at,
+        supabaseData: {
+          path: galleryItem.file_path,
+          bucket: process.env.SUPABASE_STORAGE_NAME,
+          id: galleryItem.id,
+        },
       },
-      message: "File uploaded successfully",
+      message: "Image uploaded successfully to Supabase",
     });
   } catch (error) {
     console.error("Upload error:", error);
@@ -135,6 +134,14 @@ export default async function handler(req, res) {
       error.name === "JsonWebTokenError"
     ) {
       return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (error.code) {
+      return res.status(400).json({
+        error: "Supabase operation failed",
+        details: error.message,
+        code: error.code,
+      });
     }
 
     return res.status(500).json({

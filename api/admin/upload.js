@@ -1,6 +1,6 @@
 // Image Upload API - Dedicated Endpoint (Vercel Pro)
 import { verifyAdminToken } from "./auth.js";
-import { SupabaseService } from "../../lib/supabase.js";
+import { SupabaseAdminService } from "../../lib/supabase-admin.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -70,8 +70,8 @@ export default async function handler(req, res) {
     const extension = fileName.split(".").pop();
     const uniqueFileName = `${sanitizedTitle}-${timestamp}.${extension}`;
 
-    // Upload to Supabase Storage
-    const uploadResult = await SupabaseService.uploadImage(
+    // Upload to Supabase Storage using ADMIN client (bypasses RLS)
+    const uploadResult = await SupabaseAdminService.uploadImage(
       buffer,
       uniqueFileName,
       category
@@ -95,8 +95,8 @@ export default async function handler(req, res) {
       sort_order: 0,
     };
 
-    // Save to database
-    const galleryItem = await SupabaseService.insertGalleryItem(
+    // Save to database using ADMIN client (bypasses RLS)
+    const galleryItem = await SupabaseAdminService.insertGalleryItem(
       galleryItemData
     );
 

@@ -1,6 +1,7 @@
 // Gallery Management API - Dedicated Endpoint (Vercel Pro)
 import { verifyAdminToken } from "./auth.js";
 import { SupabaseService } from "../../lib/supabase.js";
+import { SupabaseAdminService } from "../../lib/supabase-admin.js";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -130,7 +131,7 @@ async function handlePost(req, res) {
     sort_order: 0,
   };
 
-  const addedItem = await SupabaseService.insertGalleryItem(newItem);
+  const addedItem = await SupabaseAdminService.insertGalleryItem(newItem);
 
   return res.status(201).json({
     success: true,
@@ -162,7 +163,10 @@ async function handlePut(req, res) {
   if (isActive !== undefined) updateData.is_active = isActive;
   if (tags !== undefined) updateData.tags = tags;
 
-  const updatedItem = await SupabaseService.updateGalleryItem(id, updateData);
+  const updatedItem = await SupabaseAdminService.updateGalleryItem(
+    id,
+    updateData
+  );
 
   return res.status(200).json({
     success: true,
@@ -187,12 +191,12 @@ async function handleDelete(req, res) {
     return res.status(404).json({ error: "Gallery item not found" });
   }
 
-  // Delete from database
-  await SupabaseService.deleteGalleryItem(id);
+  // Delete from database using ADMIN client
+  await SupabaseAdminService.deleteGalleryItem(id);
 
-  // Delete file from storage
+  // Delete file from storage using ADMIN client
   try {
-    await SupabaseService.deleteFile(itemToDelete.file_path);
+    await SupabaseAdminService.deleteFile(itemToDelete.file_path);
   } catch (error) {
     console.warn("Could not delete file from storage:", error);
     // Continue even if storage deletion fails

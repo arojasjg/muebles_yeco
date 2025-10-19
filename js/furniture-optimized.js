@@ -526,14 +526,8 @@ function setupPerformanceOptimizations() {
   // Parallax effect with RAF
   setupParallax();
 
-  // Prefetch next page
-  const galleryLink = document.querySelector('a[href="visual-gallery.php"]');
-  if (galleryLink) {
-    const prefetch = document.createElement("link");
-    prefetch.rel = "prefetch";
-    prefetch.href = "visual-gallery.php";
-    document.head.appendChild(prefetch);
-  }
+  // Prefetch next page - removed PHP reference
+  // Visual gallery is now integrated into the main page
 }
 
 /**

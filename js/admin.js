@@ -412,7 +412,7 @@ class AdminPanel {
       // Convert file to base64
       const fileData = await this.fileToBase64(file);
 
-      const response = await fetch("/api/admin/upload-simple", {
+      const response = await fetch("/api/admin/upload-supabase", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

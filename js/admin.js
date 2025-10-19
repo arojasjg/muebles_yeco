@@ -406,50 +406,29 @@ class AdminPanel {
       return;
     }
 
-    this.showStatus("uploadStatus", "Procesando archivo...", "info");
+    this.showStatus(
+      "uploadStatus",
+      "Archivo seleccionado. Complete los detalles.",
+      "info"
+    );
 
     try {
       // Convert file to base64
       const fileData = await this.fileToBase64(file);
 
-      const response = await fetch("/api/admin/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
-        },
-        body: JSON.stringify({
-          fileData: fileData,
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        }),
-      });
+      // Store file data temporarily
+      this.uploadedFile = {
+        dataUrl: fileData,
+        filename: file.name,
+        mimetype: file.type,
+        size: file.size,
+      };
 
-      const data = await response.json();
-
-      if (response.ok) {
-        this.uploadedFile = data.data;
-        this.showFileDetailsForm();
-        this.showStatus(
-          "uploadStatus",
-          "Archivo procesado exitosamente. Complete los detalles.",
-          "success"
-        );
-      } else {
-        this.showStatus(
-          "uploadStatus",
-          data.error || "Error al procesar archivo",
-          "error"
-        );
-      }
+      // Show form to add details
+      this.showFileDetailsForm();
     } catch (error) {
-      console.error("Upload error:", error);
-      this.showStatus(
-        "uploadStatus",
-        "Error de conexión al subir archivo",
-        "error"
-      );
+      console.error("File processing error:", error);
+      this.showStatus("uploadStatus", "Error al procesar archivo", "error");
     }
   }
 

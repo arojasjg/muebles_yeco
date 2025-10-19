@@ -66,6 +66,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    
+    <!-- Preload LCP Image -->
+    <link rel="preload" as="image" href="images/WhatsApp Image 2025-09-22 at 21.07.45.jpeg" fetchpriority="high" />
 
     <!-- Critical CSS Inline -->
     <style>
@@ -103,13 +106,32 @@
       ><link rel="stylesheet" href="css/furniture-optimized.css"
     /></noscript>
 
-    <!-- Fonts with display swap -->
+    <!-- Fonts with display swap and optional fallback -->
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
       rel="stylesheet"
       media="print"
       onload="this.media='all'"
     />
+    <style>
+      /* Font fallback to prevent CLS */
+      @font-face {
+        font-family: 'Playfair Display Fallback';
+        src: local('Georgia');
+        size-adjust: 100%;
+        ascent-override: 95%;
+        descent-override: 25%;
+        line-gap-override: 0%;
+      }
+      @font-face {
+        font-family: 'Inter Fallback';
+        src: local('Arial');
+        size-adjust: 107%;
+        ascent-override: 90%;
+        descent-override: 22%;
+        line-gap-override: 0%;
+      }
+    </style>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="logo-transparent.png" />
@@ -233,9 +255,10 @@
         <img
           src="images/WhatsApp Image 2025-09-22 at 21.07.45.jpeg"
           alt="Artesano creando muebles de madera de alta calidad"
-          width="600"
-          height="600"
-          loading="lazy"
+          width="1461"
+          height="1600"
+          loading="eager"
+          fetchpriority="high"
         />
         <div class="about-badge">
           <span class="badge-number">100%</span>
@@ -262,8 +285,8 @@
           <img
             src="images/WhatsApp Image 2025-09-22 at 21.07.37.jpeg"
             alt="Colección de muebles para sala de estar - Centros de entretenimiento elegantes"
-            width="400"
-            height="450"
+            width="1600"
+            height="1800"
             loading="lazy"
           />
           <div class="collection-overlay">
@@ -280,8 +303,8 @@
           <img
             src="images/WhatsApp Image 2025-09-22 at 21.07.48.jpeg"
             alt="Colección de muebles para dormitorio - Cómodas y unidades de almacenamiento sofisticadas"
-            width="400"
-            height="450"
+            width="1600"
+            height="1800"
             loading="lazy"
           />
           <div class="collection-overlay">
@@ -296,8 +319,8 @@
           <img
             src="images/WhatsApp Image 2025-09-22 at 21.07.46.jpeg"
             alt="Muebles personalizados a medida - Diseños únicos adaptados a tu visión"
-            width="400"
-            height="450"
+            width="1600"
+            height="1800"
             loading="lazy"
           />
           <div class="collection-overlay">

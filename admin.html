@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Panel - Muebles Yeco</title>
-    <link rel="icon" type="image/png" href="logo-transparent.png" />
+    <link rel="icon" type="image/x-icon" href="logo-my.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
 
     <!-- Modern CSS Framework -->
     <style>
@@ -466,11 +468,19 @@
     <div id="loginScreen" class="login-container">
       <div class="login-card">
         <div class="login-title">
-          <img
-            src="logo-transparent.png"
-            alt="Logo"
-            style="width: 48px; height: 48px; margin-bottom: 1rem"
-          />
+          <picture>
+            <source
+              srcset="logo-48.webp 1x, logo-96.webp 2x"
+              type="image/webp"
+            />
+            <img
+              src="logo-48.png"
+              srcset="logo-96.png 2x"
+              alt="Logo"
+              style="width: 48px; height: 48px; margin-bottom: 1rem"
+              loading="eager"
+            />
+          </picture>
           <div>Admin Panel</div>
           <div
             style="
@@ -509,7 +519,18 @@
       <!-- Header -->
       <header class="admin-header">
         <div class="admin-brand">
-          <img src="logo-transparent.png" alt="Logo" />
+          <picture>
+            <source
+              srcset="logo-40.webp 1x, logo-80.webp 2x"
+              type="image/webp"
+            />
+            <img
+              src="logo-40.png"
+              srcset="logo-80.png 2x"
+              alt="Logo"
+              loading="eager"
+            />
+          </picture>
           <span>Admin Panel - Muebles Yeco</span>
         </div>
 

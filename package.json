@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",
-    "upload-images": "node scripts/upload-images-to-supabase.js"
+    "upload-images": "node scripts/upload-images-to-supabase.js",
+    "optimize:logo": "node scripts/optimize-logo.js",
+    "optimize:images": "node scripts/optimize-images-sharp.js",
+    "optimize:all": "npm run optimize:logo && npm run optimize:images"
   },
   "keywords": [
     "muebles",

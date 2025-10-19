@@ -521,6 +521,7 @@ section {
     cursor: pointer;
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
+        min-height: 100px;
 }
 
 .gallery-item:hover {

@@ -766,6 +766,7 @@ function showFullGallery() {
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
       cursor: pointer;
+      min-height: 100px;
     }
     
     .modal-gallery-item:hover {
@@ -779,6 +780,7 @@ function showFullGallery() {
       object-fit: cover;
       filter: contrast(120%) brightness(110%);
       transition: all 0.3s ease;
+      min-height: 100px;
     }
     
     .modal-gallery-item:hover img {

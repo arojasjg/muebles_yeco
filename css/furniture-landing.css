@@ -533,10 +533,12 @@ section {
     height: 350px;
     object-fit: cover;
     transition: transform 0.5s ease;
+    filter: contrast(120%) brightness(110%);
 }
 
 .gallery-item:hover img {
     transform: scale(1.1);
+    filter: contrast(125%) brightness(115%) saturate(108%);
 }
 
 .gallery-item-overlay {

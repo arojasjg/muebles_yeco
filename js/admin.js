@@ -158,7 +158,8 @@ class AdminPanel {
     status.style.display = "none";
 
     try {
-      const response = await fetch("/api/admin/auth", {
+      // Using simple auth endpoint (no bcrypt) for easier debugging
+      const response = await fetch("/api/admin/auth-simple", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,0 +1,135 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                  🚨 SOLUCIÓN RÁPIDA: Invalid Credentials                     ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+OPCIÓN 1: Usar Endpoint Simple (MÁS RÁPIDO)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: js/admin.js
+
+2. Busca la línea ~162:
+   const response = await fetch("/api/admin/auth", {
+
+3. Cámbiala a:
+   const response = await fetch("/api/admin/auth-simple", {
+
+4. Guarda el archivo
+
+5. Refresca admin.html
+
+6. Login con:
+   Username: marquiro17
+   Password: marquiro17!@#$
+
+✅ Esto debería funcionar INMEDIATAMENTE
+
+
+OPCIÓN 2: Usar Herramienta de Debug
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: http://localhost:8888/catalogo/test-admin-login.html
+   (O tu puerto de MAMP)
+
+2. Click en "Test Simple Auth"
+
+3. Lee los logs - te dirán exactamente qué está fallando
+
+4. Si funciona, click en "Open admin panel"
+
+
+OPCIÓN 3: Bypass Auth (Solo Desarrollo Local)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: js/admin.js
+
+2. Busca la función checkAuthentication() (línea ~200)
+
+3. Agrega al inicio:
+   if (window.location.hostname === 'localhost') {
+     this.showDashboard();
+     return;
+   }
+
+4. Guarda y refresca
+
+⚠️  SOLO para desarrollo. Quita esto antes de producción.
+
+
+VERIFICAR QUE ESTÁS USANDO SERVIDOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ NO FUNCIONA:
+   file:///Applications/MAMP/htdocs/catalogo/admin.html
+
+✅ SÍ FUNCIONA:
+   http://localhost:8888/catalogo/admin.html
+   http://localhost:8000/admin.html
+   http://localhost:3000/admin.html
+
+
+INICIAR SERVIDOR SI NO ESTÁ CORRIENDO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Opción A - MAMP:
+  1. Abre MAMP
+  2. Click "Start Servers"
+  3. Accede: http://localhost:8888/catalogo/admin.html
+
+Opción B - Python:
+  cd /Applications/MAMP/htdocs/catalogo
+  python3 -m http.server 8000
+  # Accede: http://localhost:8000/admin.html
+
+Opción C - Vercel Dev (para APIs):
+  vercel dev
+  # Accede: http://localhost:3000/admin.html
+
+
+CREDENCIALES EXACTAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Username: marquiro17
+Password: marquiro17!@#$
+
+⚠️  Sin espacios antes o después
+⚠️  Exactamente como se muestra
+⚠️  Copia y pega para evitar errores
+
+
+ARCHIVOS CREADOS PARA AYUDARTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ test-admin-login.html
+   Herramienta de debug visual
+   Te muestra exactamente qué está fallando
+
+✅ api/admin/auth-simple.js
+   Endpoint de autenticación simplificado
+   NO usa bcrypt, solo compara strings
+
+✅ DEBUG_ADMIN_LOGIN.md
+   Guía completa de debugging paso a paso
+
+
+RESUMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Cambia fetch("/api/admin/auth") a fetch("/api/admin/auth-simple")
+2. Usa servidor (no file://)
+3. Login: marquiro17 / marquiro17!@#$
+4. Debería funcionar ✅
+
+Si no funciona:
+- Abre test-admin-login.html
+- Click "Test Simple Auth"
+- Lee los logs
+- Comparte los logs para más ayuda
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║  La solución MÁS RÁPIDA es cambiar a /api/admin/auth-simple                 ║
+║  Esto elimina el problema de bcrypt y debería funcionar inmediatamente      ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

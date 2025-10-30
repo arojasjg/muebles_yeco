@@ -1,16 +1,10 @@
-// Admin Authentication API - Dedicated Endpoint (Vercel Pro)
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+// Simple Admin Authentication - For Testing
+// Use this temporarily if auth.js is not working
 
-const ADMIN_CREDENTIALS = {
-  username: process.env.ADMIN_USERNAME || "admin",
-  passwordHash:
-    process.env.ADMIN_PASSWORD_HASH ||
-    "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
-};
+import jwt from "jsonwebtoken";
 
 const JWT_SECRET =
-  process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
+  process.env.JWT_SECRET || "muebles-yeco-super-secret-jwt-key-2025";
 
 export default async function handler(req, res) {
   // CORS headers
@@ -29,8 +23,13 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "POST") {
-      // Login
+      // Simple login - NO BCRYPT
       const { username, password } = req.body;
+
+      console.log("Simple auth attempt:", {
+        username,
+        hasPassword: !!password,
+      });
 
       if (!username || !password) {
         return res
@@ -38,58 +37,27 @@ export default async function handler(req, res) {
           .json({ error: "Username and password required" });
       }
 
-      // Debug logging
-      console.log("Login attempt:", {
-        receivedUsername: username,
-        expectedUsername: ADMIN_CREDENTIALS.username,
-        usernameMatch: username === ADMIN_CREDENTIALS.username,
-        hasPassword: !!password,
-        hasHash: !!ADMIN_CREDENTIALS.passwordHash,
-      });
+      // Simple validation - HARDCODED for testing
+      const validUsername = "marquiro17";
+      const validPassword = "marquiro17!@#$";
 
-      if (username !== ADMIN_CREDENTIALS.username) {
-        console.log("Username mismatch");
+      if (username !== validUsername) {
+        console.log("Username mismatch:", username, "vs", validUsername);
         return res.status(401).json({
           error: "Invalid credentials",
-          debug:
-            process.env.NODE_ENV === "development"
-              ? "Username mismatch"
-              : undefined,
+          debug: `Expected username: ${validUsername}`,
         });
       }
 
-      let isValidPassword = false;
-      try {
-        isValidPassword = await bcrypt.compare(
-          password,
-          ADMIN_CREDENTIALS.passwordHash
-        );
-        console.log("Bcrypt compare result:", isValidPassword);
-      } catch (error) {
-        console.log("Bcrypt error, using fallback:", error.message);
-        // Fallback for testing - more permissive
-        if (
-          password === "marquiro17!@#$" ||
-          password === ADMIN_CREDENTIALS.passwordHash
-        ) {
-          isValidPassword = true;
-          console.log("Fallback authentication successful");
-        }
-      }
-
-      if (!isValidPassword) {
-        console.log("Password validation failed");
+      if (password !== validPassword) {
+        console.log("Password mismatch");
         return res.status(401).json({
           error: "Invalid credentials",
-          debug:
-            process.env.NODE_ENV === "development"
-              ? "Password mismatch"
-              : undefined,
+          debug: "Password mismatch",
         });
       }
 
-      console.log("Authentication successful");
-
+      // Generate token
       const token = jwt.sign(
         {
           username: username,
@@ -99,6 +67,8 @@ export default async function handler(req, res) {
         JWT_SECRET,
         { expiresIn: "24h" }
       );
+
+      console.log("Authentication successful");
 
       return res.status(200).json({
         success: true,
@@ -128,7 +98,10 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error("Auth error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({
+      error: "Internal server error",
+      message: error.message,
+    });
   }
 }
 

@@ -1,0 +1,203 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              🔐 FIX RÁPIDO: "Invalid Credentials" en Admin Panel             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+CAUSA DEL PROBLEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Las variables de entorno NO están configuradas en Vercel
+❌ El archivo .env local NO se sube automáticamente a Vercel
+❌ Vercel necesita que configures las variables manualmente
+
+SOLUCIÓN EN 3 PASOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 1: Ir a Vercel Dashboard
+────────────────────────────────────────────────────────────────────────────
+
+1. Abre: https://vercel.com/dashboard
+2. Selecciona tu proyecto
+3. Click en "Settings" (arriba)
+4. Click en "Environment Variables" (menú izquierdo)
+
+
+PASO 2: Agregar Variables de Entorno
+────────────────────────────────────────────────────────────────────────────
+
+Agrega estas 3 variables CRÍTICAS:
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Variable 1: ADMIN_USERNAME                                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Name:        ADMIN_USERNAME                                             │
+│ Value:       marquiro17                                                 │
+│ Environment: ✓ Production  ✓ Preview  ✓ Development                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Variable 2: ADMIN_PASSWORD_HASH                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Name:        ADMIN_PASSWORD_HASH                                        │
+│ Value:       $2a$10$N9qo8uLOickgx2ZMRZoMye.IjdQXvbVxVPBn5kYk.H8xQjL8VqeS. │
+│ Environment: ✓ Production  ✓ Preview  ✓ Development                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Variable 3: JWT_SECRET                                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Name:        JWT_SECRET                                                 │
+│ Value:       muebles-yeco-super-secret-jwt-key-2025                     │
+│ Environment: ✓ Production  ✓ Preview  ✓ Development                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+IMPORTANTE: También agrega las variables de Supabase:
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ NEXT_PUBLIC_SUPABASE_URL                                                │
+│ Value: https://igyvsqhxlvbcoolnleos.supabase.co                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ NEXT_PUBLIC_SUPABASE_ANON_KEY                                           │
+│ Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl │
+│        ZiI6ImlneXZzcWh4bHZiY29vbG5sZW9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3 │
+│        NjA3NzMyMTIsImV4cCI6MjA3NjM0OTIxMn0.M0hrB58AHmG3u0BZhxuxOCmlzFpZ │
+│        x3emPuOB8Y9Yifw                                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SUPABASE_SERVICE_ROLE_KEY                                               │
+│ Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl │
+│        ZiI6ImlneXZzcWh4bHZiY29vbG5sZW9zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIs │
+│        ImlhdCI6MTc2MDc3MzIxMiwiZXhwIjoyMDc2MzQ5MjEyfQ.3NywWmH9FU7EFBQu │
+│        kXwyzwFB8BMNCQj1EYbt3bKOkME                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+PASO 3: Redeploy
+────────────────────────────────────────────────────────────────────────────
+
+Opción A - Desde Vercel Dashboard:
+1. Ve a "Deployments"
+2. Click en el último deployment
+3. Click en "..." (tres puntos)
+4. Click en "Redeploy"
+
+Opción B - Desde Git:
+git commit --allow-empty -m "Trigger redeploy"
+git push origin main
+
+
+VERIFICAR QUE FUNCIONA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Espera 1-2 minutos para que termine el deployment
+2. Abre tu sitio: https://tu-proyecto.vercel.app/admin.html
+3. Ingresa credenciales:
+   
+   Username: marquiro17
+   Password: marquiro17!@#$
+
+4. Deberías poder iniciar sesión ✅
+
+
+OTRAS RAZONES PARA "INVALID CREDENTIALS"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. HASH INCORRECTO
+   ─────────────────
+   Síntoma: Contraseña correcta pero no funciona
+   Solución: Genera nuevo hash en https://bcrypt-generator.com/
+   - Password: marquiro17!@#$
+   - Rounds: 10
+   - Copia el hash y actualiza ADMIN_PASSWORD_HASH en Vercel
+
+2. VARIABLES NO CARGADAS
+   ──────────────────────
+   Síntoma: Error inmediato al hacer login
+   Solución: Verifica que las variables estén en "Production" environment
+   - Redeploy después de agregar variables
+
+3. TYPO EN USERNAME/PASSWORD
+   ──────────────────────────
+   Síntoma: Siempre "Invalid credentials"
+   Solución: Verifica que no haya espacios extra
+   - Username: marquiro17 (sin espacios)
+   - Password: marquiro17!@#$ (exactamente así)
+
+4. CORS ERROR
+   ───────────
+   Síntoma: Error de red o CORS
+   Solución: Asegúrate de acceder vía HTTPS
+   - ✅ https://tu-proyecto.vercel.app/admin.html
+   - ❌ file:///path/to/admin.html
+
+5. JWT_SECRET FALTANTE
+   ────────────────────
+   Síntoma: Login exitoso pero error al generar token
+   Solución: Agrega JWT_SECRET en Vercel
+   - Value: muebles-yeco-super-secret-jwt-key-2025
+
+
+DEBUGGING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ver logs en Vercel:
+1. Dashboard → Tu Proyecto → Deployments
+2. Click en el último deployment
+3. Click en "Function Logs"
+4. Busca errores relacionados con auth
+
+Test manual de API:
+curl -X POST https://tu-proyecto.vercel.app/api/admin/auth \
+  -H "Content-Type: application/json" \
+  -d '{"username":"marquiro17","password":"marquiro17!@#$"}'
+
+Respuesta esperada:
+{
+  "success": true,
+  "token": "eyJhbGc...",
+  "expiresIn": "24h"
+}
+
+
+RESUMEN VISUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local (.env file)          →    Vercel (Environment Variables)
+─────────────────────────────────────────────────────────────────────────
+
+ADMIN_USERNAME=marquiro17   →    ADMIN_USERNAME = marquiro17
+ADMIN_PASSWORD_HASH=...     →    ADMIN_PASSWORD_HASH = $2a$10$...
+JWT_SECRET=...              →    JWT_SECRET = muebles-yeco-super...
+
+⚠️  El archivo .env NO se sube a Vercel automáticamente
+✅  Debes configurar las variables manualmente en Vercel Dashboard
+
+
+CHECKLIST FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+□ Variables agregadas en Vercel Settings
+□ Variables en ambiente "Production"
+□ Redeploy completado
+□ Esperé 1-2 minutos
+□ Accediendo vía HTTPS (no file://)
+□ Username: marquiro17 (sin espacios)
+□ Password: marquiro17!@#$ (exactamente)
+□ No hay errores en Function Logs
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                        ✅ SOLUCIÓN COMPLETA                                  ║
+║                                                                              ║
+║  1. Agrega variables en Vercel Dashboard                                    ║
+║  2. Redeploy el proyecto                                                    ║
+║  3. Login con: marquiro17 / marquiro17!@#$                                  ║
+║                                                                              ║
+║  Tiempo estimado: 5 minutos                                                 ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

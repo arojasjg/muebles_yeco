@@ -5,6 +5,11 @@
 
 class AdminPanel {
   constructor() {
+    // DEVELOPMENT MODE: Check if APIs are available
+    this.isDevelopmentMode =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
     this.token = localStorage.getItem("adminToken");
     this.currentSection = "gallery";
     this.galleryData = { images: [], videos: [] };
@@ -158,7 +163,26 @@ class AdminPanel {
     status.style.display = "none";
 
     try {
-      // Using simple auth endpoint (no bcrypt) for easier debugging
+      // DEVELOPMENT MODE: Check if API is available
+      if (this.isDevelopmentMode) {
+        // Try to ping the API first
+        try {
+          const pingResponse = await fetch("/api/admin/auth-simple", {
+            method: "OPTIONS",
+          });
+
+          // If we get 404, APIs are not available - use local auth
+          if (pingResponse.status === 404) {
+            console.warn("⚠️ APIs not available - using local authentication");
+            return this.handleLocalLogin(username, password, loginBtn, loader);
+          }
+        } catch (e) {
+          console.warn("⚠️ APIs not available - using local authentication");
+          return this.handleLocalLogin(username, password, loginBtn, loader);
+        }
+      }
+
+      // Try API authentication
       const response = await fetch("/api/admin/auth-simple", {
         method: "POST",
         headers: {
@@ -183,10 +207,45 @@ class AdminPanel {
       }
     } catch (error) {
       console.error("Login error:", error);
+
+      // If in development and API fails, try local auth
+      if (this.isDevelopmentMode) {
+        console.warn("⚠️ API error - trying local authentication");
+        return this.handleLocalLogin(username, password, loginBtn, loader);
+      }
+
       this.showStatus("loginStatus", "Error de conexión", "error");
     } finally {
       loginBtn.textContent = "Iniciar Sesión";
       loader.classList.add("hidden");
+    }
+  }
+
+  handleLocalLogin(username, password, loginBtn, loader) {
+    // Local authentication for development (no API required)
+    const validUsername = "marquiro17";
+    const validPassword = "marquiro17!@#$";
+
+    if (username === validUsername && password === validPassword) {
+      this.token = "dev-token-" + Date.now();
+      localStorage.setItem("adminToken", this.token);
+      this.showStatus(
+        "loginStatus",
+        "✅ Inicio de sesión exitoso (Modo Desarrollo)",
+        "success"
+      );
+
+      loginBtn.textContent = "Iniciar Sesión";
+      loader.classList.add("hidden");
+
+      setTimeout(() => this.showDashboard(), 1000);
+      return true;
+    } else {
+      this.showStatus("loginStatus", "❌ Credenciales inválidas", "error");
+
+      loginBtn.textContent = "Iniciar Sesión";
+      loader.classList.add("hidden");
+      return false;
     }
   }
 

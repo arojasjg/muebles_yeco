@@ -1,6 +1,0 @@
-# Herd ignore file
-.DS_Store
-.kiro/
-.vscode/
-*.md
-.git/

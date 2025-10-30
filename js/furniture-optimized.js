@@ -161,8 +161,8 @@ function getStoredUploadedImages() {
 async function setupGallery() {
   try {
     // Use Supabase-powered public gallery API
-    const response = await fetch("/api/gallery");
-    if (response.ok) {
+    const response = await fetch("/api/gallery").catch(() => null);
+    if (response && response.ok) {
       const data = await response.json();
 
       // Images come directly from Supabase with optimized format
@@ -649,8 +649,10 @@ async function setupClearanceSection() {
 
   try {
     // Fetch clearance items from API
-    const response = await fetch("/api/gallery?category=liquidacion&limit=6");
-    if (response.ok) {
+    const response = await fetch(
+      "/api/gallery?category=liquidacion&limit=6"
+    ).catch(() => null);
+    if (response && response.ok) {
       const data = await response.json();
       const clearanceItems = data.data.images;
 
@@ -673,8 +675,15 @@ async function setupClearanceSection() {
   // Setup "Show All Clearance" button
   const showAllClearanceBtn = document.getElementById("showAllClearance");
   if (showAllClearanceBtn) {
-    showAllClearanceBtn.addEventListener("click", () => {
-      showFullGallery("liquidacion");
+    // Remove any existing listeners by cloning the button
+    const newBtn = showAllClearanceBtn.cloneNode(true);
+    showAllClearanceBtn.parentNode.replaceChild(newBtn, showAllClearanceBtn);
+
+    newBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Opening clearance gallery (liquidacion only)");
+      showFullGallery("liquidacion"); // Solo liquidación
     });
   }
 
@@ -802,8 +811,15 @@ function setupGalleryButton() {
   const showAllBtn = document.getElementById("showAllGallery");
   if (!showAllBtn) return;
 
-  showAllBtn.addEventListener("click", () => {
-    showFullGallery();
+  // Remove any existing listeners by cloning the button
+  const newBtn = showAllBtn.cloneNode(true);
+  showAllBtn.parentNode.replaceChild(newBtn, showAllBtn);
+
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Opening full gallery (all categories)");
+    showFullGallery(null); // null = todas las categorías
   });
 }
 
@@ -812,15 +828,28 @@ function setupGalleryButton() {
  * @param {string} filterCategory - Optional category to filter by (e.g., 'liquidacion')
  */
 function showFullGallery(filterCategory = null) {
-  // Create modal overlay
-  const modal = document.createElement("div");
-  modal.className = "gallery-modal";
-  modal.innerHTML = `
-    <div class="gallery-modal-content">
-      <div class="gallery-modal-header">
-        <h2>Galería Completa - Muebles Yeco</h2>
-        <button class="gallery-modal-close" aria-label="Cerrar galería">&times;</button>
-      </div>
+  // Close any existing modal first
+  const existingModal = document.querySelector(".gallery-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Remove any existing modal styles
+  const existingStyle = document.querySelector("style[data-modal-style]");
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+
+  // Determine title and if filters should be shown
+  const isLiquidacionOnly = filterCategory === "liquidacion";
+  const modalTitle = isLiquidacionOnly
+    ? "🔥 Muebles en Liquidación"
+    : "Galería Completa - Muebles Yeco";
+
+  // Only show filters if not liquidacion-only
+  const filtersHTML = isLiquidacionOnly
+    ? ""
+    : `
       <div class="gallery-modal-filters">
         <select id="modalCategoryFilter">
           <option value="">Todas las categorías</option>
@@ -832,6 +861,18 @@ function showFullGallery(filterCategory = null) {
           <option value="closet">Closet</option>
         </select>
       </div>
+    `;
+
+  // Create modal overlay
+  const modal = document.createElement("div");
+  modal.className = "gallery-modal";
+  modal.innerHTML = `
+    <div class="gallery-modal-content">
+      <div class="gallery-modal-header">
+        <h2>${modalTitle}</h2>
+        <button class="gallery-modal-close" aria-label="Cerrar galería">&times;</button>
+      </div>
+      ${filtersHTML}
       <div class="gallery-modal-grid" id="modalGalleryGrid">
         <!-- Gallery items will be loaded here -->
       </div>
@@ -840,6 +881,7 @@ function showFullGallery(filterCategory = null) {
 
   // Add modal styles
   const style = document.createElement("style");
+  style.setAttribute("data-modal-style", "true");
   style.textContent = `
     .gallery-modal {
       position: fixed;
@@ -1088,36 +1130,48 @@ function showFullGallery(filterCategory = null) {
   const closeBtn = modal.querySelector(".gallery-modal-close");
   const categoryFilter = modal.querySelector("#modalCategoryFilter");
 
-  // Set initial filter if provided
-  if (filterCategory) {
+  // Set initial filter if provided and filter exists
+  if (filterCategory && categoryFilter) {
     categoryFilter.value = filterCategory;
   }
 
-  closeBtn.addEventListener("click", () => {
-    document.body.removeChild(modal);
-    document.head.removeChild(style);
-  });
+  // Function to close modal properly
+  const closeModal = () => {
+    if (modal && modal.parentNode) {
+      modal.remove();
+    }
+    if (style && style.parentNode) {
+      style.remove();
+    }
+    document.body.style.overflow = "";
+  };
+
+  closeBtn.addEventListener("click", closeModal);
 
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      document.body.removeChild(modal);
-      document.head.removeChild(style);
+      closeModal();
     }
   });
 
-  categoryFilter.addEventListener("change", () => {
-    filterModalGallery(categoryFilter.value);
-  });
+  // Close on ESC key
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+      document.removeEventListener("keydown", handleEscape);
+    }
+  };
+  document.addEventListener("keydown", handleEscape);
+
+  // Only add category filter listener if filter exists (not liquidacion-only)
+  if (categoryFilter) {
+    categoryFilter.addEventListener("change", () => {
+      filterModalGallery(categoryFilter.value);
+    });
+  }
 
   // Prevent body scroll
   document.body.style.overflow = "hidden";
-
-  // Restore body scroll when modal closes
-  const originalClose = closeBtn.onclick;
-  closeBtn.onclick = () => {
-    document.body.style.overflow = "";
-    if (originalClose) originalClose();
-  };
 }
 
 /**
@@ -1133,33 +1187,126 @@ async function loadModalGallery(filterCategory = null) {
     const url = filterCategory
       ? `/api/gallery?category=${filterCategory}`
       : "/api/gallery";
-    const response = await fetch(url);
+    const response = await fetch(url).catch(() => null);
     let items = [];
 
-    if (response.ok) {
+    if (response && response.ok) {
       const data = await response.json();
       items = [...data.data.images, ...data.data.videos];
+
+      // Filter by category if specified
+      if (filterCategory) {
+        items = items.filter(
+          (item) =>
+            item.category === filterCategory ||
+            (filterCategory === "liquidacion" && item.is_clearance)
+        );
+      }
     } else {
-      // Fallback to static images
-      items = furnitureImages.map((img, index) => ({
-        src: `images/${img}`,
-        title: `Mueble ${index + 1}`,
-        description: "Mueble de melamina a medida",
-        category: index % 2 === 0 ? "sala" : "dormitorio",
-      }));
+      // Fallback to static images with varied categories
+      items = furnitureImages.map((img, index) => {
+        // Assign categories: some liquidacion, some sala, some dormitorio
+        let category,
+          isLiquidacion = false,
+          originalPrice,
+          clearancePrice,
+          discount;
+
+        if (index % 5 === 0) {
+          // Every 5th item is liquidacion
+          category = "liquidacion";
+          isLiquidacion = true;
+          originalPrice = 1500 + index * 100;
+          clearancePrice = originalPrice * 0.7; // 30% off
+          discount = 30;
+        } else if (index % 3 === 0) {
+          category = "cocina";
+        } else if (index % 2 === 0) {
+          category = "sala";
+        } else {
+          category = "dormitorio";
+        }
+
+        return {
+          src: `images/${img}`,
+          title: isLiquidacion
+            ? `Mueble en Liquidación ${index + 1}`
+            : `Mueble ${index + 1}`,
+          description: isLiquidacion
+            ? "¡Oferta especial! Últimas unidades disponibles"
+            : "Mueble de melamina a medida",
+          category: category,
+          is_clearance: isLiquidacion,
+          original_price: originalPrice,
+          clearance_price: clearancePrice,
+          discount_percentage: discount,
+        };
+      });
+
+      // Filter by category if specified
+      if (filterCategory) {
+        items = items.filter(
+          (item) =>
+            item.category === filterCategory ||
+            (filterCategory === "liquidacion" && item.is_clearance)
+        );
+      }
     }
 
     renderModalGallery(items);
   } catch (error) {
     console.log("Using fallback gallery data for modal");
-    // Fallback to static images
-    const items = furnitureImages.map((img, index) => ({
-      src: `images/${img}`,
-      title: `Mueble ${index + 1}`,
-      description: "Mueble de melamina a medida",
-      category: index % 2 === 0 ? "sala" : "dormitorio",
-    }));
-    renderModalGallery(items);
+    // Fallback to static images with varied categories
+    const items = furnitureImages.map((img, index) => {
+      // Assign categories: some liquidacion, some sala, some dormitorio
+      let category,
+        isLiquidacion = false,
+        originalPrice,
+        clearancePrice,
+        discount;
+
+      if (index % 5 === 0) {
+        // Every 5th item is liquidacion
+        category = "liquidacion";
+        isLiquidacion = true;
+        originalPrice = 1500 + index * 100;
+        clearancePrice = originalPrice * 0.7; // 30% off
+        discount = 30;
+      } else if (index % 3 === 0) {
+        category = "cocina";
+      } else if (index % 2 === 0) {
+        category = "sala";
+      } else {
+        category = "dormitorio";
+      }
+
+      return {
+        src: `images/${img}`,
+        title: isLiquidacion
+          ? `Mueble en Liquidación ${index + 1}`
+          : `Mueble ${index + 1}`,
+        description: isLiquidacion
+          ? "¡Oferta especial! Últimas unidades disponibles"
+          : "Mueble de melamina a medida",
+        category: category,
+        is_clearance: isLiquidacion,
+        original_price: originalPrice,
+        clearance_price: clearancePrice,
+        discount_percentage: discount,
+      };
+    });
+
+    // Filter by category if specified
+    if (filterCategory) {
+      const filteredItems = items.filter(
+        (item) =>
+          item.category === filterCategory ||
+          (filterCategory === "liquidacion" && item.is_clearance)
+      );
+      renderModalGallery(filteredItems);
+    } else {
+      renderModalGallery(items);
+    }
   }
 }
 

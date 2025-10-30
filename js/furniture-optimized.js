@@ -643,6 +643,8 @@ function setupWhatsAppButton() {
  */
 async function setupClearanceSection() {
   const clearanceGrid = document.getElementById("clearanceGrid");
+  const clearanceSection = document.getElementById("liquidacion");
+
   if (!clearanceGrid) return;
 
   try {
@@ -655,20 +657,17 @@ async function setupClearanceSection() {
       if (clearanceItems.length > 0) {
         renderClearanceItems(clearanceItems);
       } else {
-        // Hide clearance section if no items
-        const clearanceSection = document.getElementById("liquidacion");
-        if (clearanceSection) {
-          clearanceSection.style.display = "none";
-        }
+        // Show placeholder message when no items
+        renderClearancePlaceholder();
       }
+    } else {
+      // Show placeholder on API error
+      renderClearancePlaceholder();
     }
   } catch (error) {
-    console.log("No clearance items available");
-    // Hide clearance section on error
-    const clearanceSection = document.getElementById("liquidacion");
-    if (clearanceSection) {
-      clearanceSection.style.display = "none";
-    }
+    console.log("No clearance items available, showing placeholder");
+    // Show placeholder instead of hiding section
+    renderClearancePlaceholder();
   }
 
   // Setup "Show All Clearance" button
@@ -678,6 +677,31 @@ async function setupClearanceSection() {
       showFullGallery("liquidacion");
     });
   }
+
+  // Log for debugging
+  console.log("🔥 Clearance section initialized");
+}
+
+/**
+ * Render placeholder when no clearance items available
+ */
+function renderClearancePlaceholder() {
+  const grid = document.getElementById("clearanceGrid");
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">🔥</div>
+      <h3 style="color: #dc2626; font-size: 1.5rem; margin-bottom: 1rem; font-weight: 600;">¡Próximamente Ofertas Especiales!</h3>
+      <p style="color: #666; font-size: 1.1rem; margin-bottom: 1.5rem;">Estamos preparando increíbles descuentos en muebles seleccionados.</p>
+      <p style="color: #999; font-size: 0.95rem;">Vuelve pronto para ver nuestras ofertas de liquidación con precios especiales.</p>
+      <div style="margin-top: 2rem;">
+        <a href="#contacto" class="btn btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none; padding: 0.75rem 1.5rem; color: white; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+          Contáctanos para Más Información
+        </a>
+      </div>
+    </div>
+  `;
 }
 
 /**

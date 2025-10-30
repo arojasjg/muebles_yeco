@@ -65,6 +65,7 @@ const furnitureImages = [
 function init() {
   setupNavigation();
   setupGallery();
+  setupClearanceSection();
   setupLightbox();
   setupContactForm();
   setupScrollEffects();
@@ -638,6 +639,139 @@ function setupWhatsAppButton() {
 }
 
 /**
+ * Setup Clearance Section
+ */
+async function setupClearanceSection() {
+  const clearanceGrid = document.getElementById("clearanceGrid");
+  if (!clearanceGrid) return;
+
+  try {
+    // Fetch clearance items from API
+    const response = await fetch("/api/gallery?category=liquidacion&limit=6");
+    if (response.ok) {
+      const data = await response.json();
+      const clearanceItems = data.data.images;
+
+      if (clearanceItems.length > 0) {
+        renderClearanceItems(clearanceItems);
+      } else {
+        // Hide clearance section if no items
+        const clearanceSection = document.getElementById("liquidacion");
+        if (clearanceSection) {
+          clearanceSection.style.display = "none";
+        }
+      }
+    }
+  } catch (error) {
+    console.log("No clearance items available");
+    // Hide clearance section on error
+    const clearanceSection = document.getElementById("liquidacion");
+    if (clearanceSection) {
+      clearanceSection.style.display = "none";
+    }
+  }
+
+  // Setup "Show All Clearance" button
+  const showAllClearanceBtn = document.getElementById("showAllClearance");
+  if (showAllClearanceBtn) {
+    showAllClearanceBtn.addEventListener("click", () => {
+      showFullGallery("liquidacion");
+    });
+  }
+}
+
+/**
+ * Render clearance items in dedicated section
+ */
+function renderClearanceItems(items) {
+  const grid = document.getElementById("clearanceGrid");
+  if (!grid) return;
+
+  const fragment = document.createDocumentFragment();
+
+  items.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "clearance-card";
+    card.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    `;
+
+    const hasPricing = item.original_price && item.clearance_price;
+    const discount =
+      item.discount_percentage ||
+      (hasPricing
+        ? Math.round(
+            ((item.original_price - item.clearance_price) /
+              item.original_price) *
+              100
+          )
+        : 0);
+
+    card.innerHTML = `
+      <div style="position: relative;">
+        ${
+          discount > 0
+            ? `
+        <div style="position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); z-index: 10;">
+          -${discount}% OFF
+        </div>
+        `
+            : ""
+        }
+        <img src="${item.src}" alt="${
+      item.title
+    }" loading="lazy" style="width: 100%; height: 250px; object-fit: cover;">
+      </div>
+      <div style="padding: 1.5rem;">
+        <h3 style="color: #1a1a1a; font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">${
+          item.title
+        }</h3>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">${
+          item.description || "Mueble de melamina en liquidación"
+        }</p>
+        ${
+          hasPricing
+            ? `
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.75rem; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
+          <span style="text-decoration: line-through; color: #991b1b; font-size: 0.95rem;">Q${item.original_price.toFixed(
+            2
+          )}</span>
+          <span style="color: #dc2626; font-weight: 700; font-size: 1.3rem;">Q${item.clearance_price.toFixed(
+            2
+          )}</span>
+        </div>
+        `
+            : ""
+        }
+        <button onclick="openLightbox(${index})" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+          Ver Detalles
+        </button>
+      </div>
+    `;
+
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "translateY(-5px)";
+      card.style.boxShadow = "0 8px 30px rgba(239, 68, 68, 0.2)";
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "translateY(0)";
+      card.style.boxShadow = "0 4px 20px rgba(0,0,0,0.1)";
+    });
+
+    fragment.appendChild(card);
+  });
+
+  grid.appendChild(fragment);
+}
+
+/**
  * Setup Gallery Button functionality
  */
 function setupGalleryButton() {
@@ -651,8 +785,9 @@ function setupGalleryButton() {
 
 /**
  * Show full gallery functionality
+ * @param {string} filterCategory - Optional category to filter by (e.g., 'liquidacion')
  */
-function showFullGallery() {
+function showFullGallery(filterCategory = null) {
   // Create modal overlay
   const modal = document.createElement("div");
   modal.className = "gallery-modal";
@@ -665,6 +800,7 @@ function showFullGallery() {
       <div class="gallery-modal-filters">
         <select id="modalCategoryFilter">
           <option value="">Todas las categorías</option>
+          <option value="liquidacion">🔥 Liquidación</option>
           <option value="sala">Sala</option>
           <option value="dormitorio">Dormitorio</option>
           <option value="cocina">Cocina</option>
@@ -813,6 +949,64 @@ function showFullGallery() {
       text-transform: capitalize;
     }
     
+    .modal-gallery-category.liquidacion {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      font-weight: 600;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    
+    .clearance-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      z-index: 10;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .clearance-pricing {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #fef2f2;
+      border-radius: 4px;
+      border-left: 3px solid #ef4444;
+    }
+    
+    .original-price {
+      text-decoration: line-through;
+      color: #991b1b;
+      font-size: 0.85rem;
+      margin-right: 0.5rem;
+    }
+    
+    .clearance-price {
+      color: #dc2626;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    .discount-badge {
+      display: inline-block;
+      background: #dc2626;
+      color: white;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 0.5rem;
+    }
+    
     @media (min-width: 1200px) {
       .gallery-modal-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -864,11 +1058,16 @@ function showFullGallery() {
   document.body.appendChild(modal);
 
   // Load gallery items
-  loadModalGallery();
+  loadModalGallery(filterCategory);
 
   // Setup event listeners
   const closeBtn = modal.querySelector(".gallery-modal-close");
   const categoryFilter = modal.querySelector("#modalCategoryFilter");
+
+  // Set initial filter if provided
+  if (filterCategory) {
+    categoryFilter.value = filterCategory;
+  }
 
   closeBtn.addEventListener("click", () => {
     document.body.removeChild(modal);
@@ -899,14 +1098,18 @@ function showFullGallery() {
 
 /**
  * Load gallery items into modal
+ * @param {string} filterCategory - Optional category to filter by
  */
-async function loadModalGallery() {
+async function loadModalGallery(filterCategory = null) {
   const grid = document.getElementById("modalGalleryGrid");
   if (!grid) return;
 
   try {
-    // Try to load from admin API
-    const response = await fetch("/api/gallery");
+    // Try to load from admin API with optional category filter
+    const url = filterCategory
+      ? `/api/gallery?category=${filterCategory}`
+      : "/api/gallery";
+    const response = await fetch(url);
     let items = [];
 
     if (response.ok) {
@@ -944,20 +1147,55 @@ function renderModalGallery(items) {
   if (!grid) return;
 
   grid.innerHTML = items
-    .map(
-      (item, index) => `
-    <div class="modal-gallery-item" onclick="openLightboxFromModal(${index})">
+    .map((item, index) => {
+      const isLiquidacion =
+        item.category === "liquidacion" || item.is_clearance;
+      const hasPricing = item.original_price && item.clearance_price;
+      const discount =
+        item.discount_percentage ||
+        (hasPricing
+          ? Math.round(
+              ((item.original_price - item.clearance_price) /
+                item.original_price) *
+                100
+            )
+          : 0);
+
+      return `
+    <div class="modal-gallery-item" onclick="openLightboxFromModal(${index})" style="position: relative;">
+      ${
+        isLiquidacion ? '<div class="clearance-badge">🔥 LIQUIDACIÓN</div>' : ""
+      }
       <img src="${item.src}" alt="${item.title}" loading="lazy">
       <div class="modal-gallery-info">
         <div class="modal-gallery-title">${item.title}</div>
         <div class="modal-gallery-description">${
           item.description || "Mueble de melamina personalizado"
         }</div>
-        <span class="modal-gallery-category">${item.category || "mueble"}</span>
+        ${
+          hasPricing
+            ? `
+        <div class="clearance-pricing">
+          <span class="original-price">Q${item.original_price.toFixed(2)}</span>
+          <span class="clearance-price">Q${item.clearance_price.toFixed(
+            2
+          )}</span>
+          ${
+            discount > 0
+              ? `<span class="discount-badge">-${discount}%</span>`
+              : ""
+          }
+        </div>
+        `
+            : ""
+        }
+        <span class="modal-gallery-category ${
+          isLiquidacion ? "liquidacion" : ""
+        }">${item.category || "mueble"}</span>
       </div>
     </div>
-  `
-    )
+  `;
+    })
     .join("");
 
   // Update global gallery images for lightbox

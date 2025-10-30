@@ -1196,3 +1196,309 @@ section {
 .form-error {
     animation: slideIn 0.3s ease;
 }
+
+/* ===================================
+   Clearance/Liquidación Section Styles
+   Principal Engineer Implementation
+   =================================== */
+
+/* Clearance Section */
+.clearance-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.clearance-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ef4444, #dc2626, #ef4444);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Clearance Badge */
+.clearance-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    z-index: 10;
+    animation: pulse-clearance 2s ease-in-out infinite;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@keyframes pulse-clearance {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
+}
+
+/* Clearance Card */
+.clearance-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.clearance-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+.clearance-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.clearance-card:hover::after {
+    opacity: 1;
+}
+
+/* Clearance Pricing */
+.clearance-pricing {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+    margin: 1rem 0;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #991b1b;
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+
+.clearance-price {
+    color: #dc2626;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.5px;
+}
+
+.discount-badge {
+    display: inline-block;
+    background: #dc2626;
+    color: white;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: auto;
+    animation: pulse-discount 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-discount {
+    0%, 100% { 
+        transform: scale(1);
+    }
+    50% { 
+        transform: scale(1.1);
+    }
+}
+
+/* Clearance Grid */
+.clearance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Clearance Category Badge in Modal */
+.modal-gallery-category.liquidacion {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    font-weight: 600;
+    animation: pulse-clearance 2s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Clearance Button Styles */
+.btn-clearance {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-clearance::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-clearance:hover::before {
+    left: 100%;
+}
+
+.btn-clearance:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Clearance Section Label */
+.section-label.clearance-label {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    animation: pulse-clearance 2s ease-in-out infinite;
+}
+
+/* Responsive Clearance Grid */
+@media (max-width: 1024px) {
+    .clearance-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .clearance-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .clearance-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .clearance-price {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .clearance-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .clearance-section {
+        padding: 3rem 0;
+    }
+}
+
+/* Clearance Item Hover Effects */
+.clearance-card img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clearance-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Savings Highlight */
+.savings-highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #166534;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.savings-highlight::before {
+    content: '💰';
+    font-size: 1.1rem;
+}
+
+/* Limited Stock Warning */
+.limited-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff7ed;
+    color: #c2410c;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.limited-stock::before {
+    content: '⚠️';
+}
+
+/* Clearance Navigation Link Highlight */
+.nav-link.clearance-nav {
+    color: #ef4444 !important;
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-link.clearance-nav::after {
+    content: '🔥';
+    margin-left: 0.25rem;
+    animation: flicker 1.5s ease-in-out infinite;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Clearance Modal Enhancements */
+.modal-gallery-item.clearance-item {
+    border: 2px solid #fecaca;
+    background: linear-gradient(to bottom, #ffffff, #fef2f2);
+}
+
+.modal-gallery-item.clearance-item:hover {
+    border-color: #ef4444;
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.2);
+}

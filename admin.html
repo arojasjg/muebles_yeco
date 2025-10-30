@@ -562,6 +562,7 @@
                 style="width: auto"
               >
                 <option value="">Todas las categorías</option>
+                <option value="liquidacion">🔥 Liquidación</option>
                 <option value="sala">Sala</option>
                 <option value="dormitorio">Dormitorio</option>
                 <option value="cocina">Cocina</option>
@@ -629,12 +630,56 @@
                 <label class="form-label">Categoría *</label>
                 <select id="fileCategory" class="form-select" required>
                   <option value="">Seleccionar categoría</option>
+                  <option value="liquidacion">🔥 Liquidación</option>
                   <option value="sala">Sala</option>
                   <option value="dormitorio">Dormitorio</option>
                   <option value="cocina">Cocina</option>
                   <option value="oficina">Oficina</option>
                   <option value="closet">Closet</option>
                 </select>
+              </div>
+
+              <!-- Clearance Pricing Fields (shown only for Liquidación category) -->
+              <div id="clearancePricingFields" class="hidden">
+                <div class="form-group">
+                  <label class="form-label">Precio Original (Q)</label>
+                  <input
+                    type="number"
+                    id="fileOriginalPrice"
+                    class="form-input"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Precio de Liquidación (Q)</label>
+                  <input
+                    type="number"
+                    id="fileClearancePrice"
+                    class="form-input"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Descuento (%)</label>
+                  <input
+                    type="number"
+                    id="fileDiscountPercentage"
+                    class="form-input"
+                    min="0"
+                    max="100"
+                    placeholder="30"
+                  />
+                  <small style="color: var(--text-light); font-size: 0.85rem"
+                    >Se calculará automáticamente si se ingresan ambos
+                    precios</small
+                  >
+                </div>
               </div>
 
               <div class="flex gap-2">
@@ -696,12 +741,49 @@
           <div class="form-group">
             <label class="form-label">Categoría</label>
             <select id="editCategory" class="form-select" required>
+              <option value="liquidacion">🔥 Liquidación</option>
               <option value="sala">Sala</option>
               <option value="dormitorio">Dormitorio</option>
               <option value="cocina">Cocina</option>
               <option value="oficina">Oficina</option>
               <option value="closet">Closet</option>
             </select>
+          </div>
+
+          <!-- Clearance Pricing Fields for Edit Modal -->
+          <div id="editClearancePricingFields" class="hidden">
+            <div class="form-group">
+              <label class="form-label">Precio Original (Q)</label>
+              <input
+                type="number"
+                id="editOriginalPrice"
+                class="form-input"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Precio de Liquidación (Q)</label>
+              <input
+                type="number"
+                id="editClearancePrice"
+                class="form-input"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Descuento (%)</label>
+              <input
+                type="number"
+                id="editDiscountPercentage"
+                class="form-input"
+                min="0"
+                max="100"
+              />
+            </div>
           </div>
 
           <div class="form-group">
